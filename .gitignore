@@ -1,0 +1,7 @@
+build
+dist
+ipamd.egg-info
+demo/dev
+__pycache__
+.idea
+/ipa-core/
