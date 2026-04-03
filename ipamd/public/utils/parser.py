@@ -19,7 +19,7 @@ def value_of(value, lookup_table):
                         value = lookup_table[variable_name]
                     except KeyError:
                         error(f'Variable {variable_name} not found in lookup table.')
-                        raise ValueError
+                        raise ValueError(f'Variable {variable_name} not found in lookup table.')
                     substr = substr[:index_of_open_curly] + str(value) + substr[index_of_close_curly + 1:]
             return eval(substr)
         elif value=='True':
@@ -27,9 +27,15 @@ def value_of(value, lookup_table):
         elif value=='False':
             return False
         else:
-            return float(value)
+            try:
+                return float(value)
+            except ValueError:
+                return value
 
 def range_to_list(range_str):
+    """
+    convert range string to list
+    """
     if range_str == '':
         return []
     ranges = range_str.split(',')
@@ -41,3 +47,22 @@ def range_to_list(range_str):
         else:
             result.append(int(r))
     return result
+
+def protein_range_split(protein_range):
+    """
+    split protein range into protein type and range
+    """
+    target_range = []
+    target_type = ""
+    if protein_range == '' or protein_range is None:
+        pass
+    elif '@' not in protein_range:
+        target_type = protein_range
+    else:
+        target_type, target_range = protein_range.split('@')
+        if target_range != 'all':
+            target_range = range_to_list(target_range)
+        else:
+            target_range = []
+
+    return target_type, target_range

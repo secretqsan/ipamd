@@ -1,5 +1,8 @@
-import ipamd
+"""
+Shared data for IPAMD
+"""
 import os
+import ipamd
 from ipamd.public.utils.hardware import available_gpus
 from ipamd.public.utils.config import Config
 available_ff = []

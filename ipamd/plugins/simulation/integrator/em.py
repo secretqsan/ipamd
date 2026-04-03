@@ -7,6 +7,6 @@ def func(param, all_info, gala_core):
         nve_rigid = gala_core.NVERigid(all_info, group_b)
     else:
         nve_rigid = None
-    nve.setZeroVel(True, 1)
+    nve.setZeroVel(True, 5)
     nve.setLimit(0.001)
     return nve, nve_rigid

@@ -35,6 +35,10 @@ class _Sequence:
         return str(sequence)
 
     @property
+    def sequence(self):
+        return str(self)
+
+    @property
     def name(self):
         return self.__seq_name__
 

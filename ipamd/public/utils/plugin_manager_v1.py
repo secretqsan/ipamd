@@ -1,50 +1,36 @@
-import copy
 import os
 import sys
 from importlib import import_module
-from tabulate import tabulate
+from ipamd.public.utils.output import tabulate
 import inspect
 
 class PluginBase:
     @staticmethod
-    def call(func_name, *args, **kwargs):
-        stack = inspect.stack()
-        caller_frame = stack[2].frame
-        caller_function_object = caller_frame.f_locals.get('self', None)
+    def call(func_name, *args, module=None, **kwargs):
+        stacks = inspect.stack()
+        caller_function_object = None
+        for stack in stacks:
+            if stack.function == 'ipamd_wrapped_function':
+                caller_function_object = stack.frame.f_locals.get('self', None)
+                if module is not None:
+                    caller_function_object = getattr(caller_function_object.app, module)
+                break
         func = getattr(caller_function_object, func_name)
         return func(*args, **kwargs)
 
     def __init__(self, plugin_dir_list):
-        self.__schema = {
-            'direct': {
-            },
-            "full": {
-                'slf': lambda: self
-            }
-        }
+        self.__schema = {}
         self.__resource = {}
         self.__available_plugins = {}
         for plugin_dir in plugin_dir_list:
             available_plugin_file_list = os.listdir(plugin_dir)
             for file in available_plugin_file_list:
-                if os.path.isdir(os.path.join(plugin_dir, file)):
-                    plugin_path = os.path.join(plugin_dir, file)
-                    files = os.listdir(plugin_path)
-                    for f in files:
-                        if f == 'main.py':
-                            self.__available_plugins[file] = {
-                                'type': 'dir',
-                                'location': plugin_dir,
-                                'loaded': False
-                            }
-                else:
-                    filename, extension_name = os.path.splitext(file)
-                    if extension_name == '.py':
-                        self.__available_plugins[filename] = {
-                            'type': 'single_file',
-                            'location': plugin_dir,
-                            'loaded': False
-                        }
+                filename, extension_name = os.path.splitext(file)
+                if extension_name == '.py':
+                    self.__available_plugins[filename] = {
+                        'location': plugin_dir,
+                        'loaded': False
+                    }
     
     def def_schema(self, name, schema):
         self.__schema[name] = schema
@@ -53,15 +39,16 @@ class PluginBase:
         self.__resource[name] = value
     
     def plugin_info(self):
-        table_header = ['Name','Location', 'Type', 'Status']
-        plugin_list = []
-        for plugin_name in self.__available_plugins.keys():
-            plugin = self.__available_plugins[plugin_name]
-            plugin_list.append(
-                [plugin_name, plugin['location'], plugin['type'], 'loaded' if plugin['loaded'] else '']
-            )
-        return tabulate(plugin_list, headers=table_header)
-
+        tabulate(
+            title="Plugin Information",
+            headers=['Name','Location', 'Status'],
+            rows=[
+                (plugin_name,
+                 self.__available_plugins[plugin_name]['location'],
+                 'loaded' if self.__available_plugins[plugin_name]['loaded'] else '')
+                for plugin_name in self.__available_plugins.keys()
+            ]
+        )
 
     def load_all(self):
         for plugin in self.__available_plugins.keys():
@@ -72,41 +59,50 @@ class PluginBase:
         sys.path.append(plugin_info['location'])
         if plugin_info['loaded']:
             return
-        if plugin_info['type'] == 'dir':
-            import_path = plugin_name + '.main'
-        else:
-            import_path = plugin_name
-        module = import_module(import_path)
-        plugin_default_config = {
-            'schema': 'direct',
-            'apply': [],
-            'attr': {}
+
+        module = import_module(plugin_name)
+        configure = {
+            "type": "function",
+            "schema": [],
+            "resource": [],
+            "alias": None,
+            "attributes": {}
         }
+
         if hasattr(module, 'configure'):
-            configure = module.configure
-            for key in plugin_default_config.keys():
-                if key not in configure.keys():
-                    configure[key] = plugin_default_config[key]
+            for key in module.configure:
+                configure[key] = module.configure[key]
+
+        schema = configure['schema']
+        recourses = configure['resource']
+
+        if configure['type'] == 'function':
+            def ipamd_wrapped_function(self, *args, **kwargs):
+                p = {}
+                for s in schema:
+                    p.update(self.__schema[s](*args, **kwargs))
+                for res in recourses:
+                    if res in self.__resource:
+                        p[res] = self.__resource[res]
+                return module.func(*args, **kwargs, **p)
+
+            ipamd_wrapped_function.attr = configure['attributes']
+            function_name = configure['alias'] if configure['alias'] else plugin_name
+            setattr(self, function_name, ipamd_wrapped_function.__get__(self, self.__class__))
+
+        elif configure['type'] == 'class':
+            class WrappedClass(module.Cls):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    for res in recourses:
+                        if res in self.__resource:
+                            setattr(self, res, self.__resource[res])
+                    for attr in configure['attributes']:
+                        setattr(self, attr, configure['attributes'][attr])
+
+            class_name = configure.get('alias', plugin_name)
+            setattr(self, class_name, WrappedClass)
         else:
-            configure = plugin_default_config
-        schema_name = configure['schema']
-        applied_recourses = configure['apply']
-        extra_param_dict = copy.deepcopy(self.__schema[schema_name])
-        for resource in applied_recourses:
-            extra_param_dict[resource] = self.__resource[resource]
-
-        def wrapped_function(self, *args, **kwargs):
-            p = {}
-            for k in extra_param_dict.keys():
-                value = extra_param_dict[k]
-                if callable(value):
-                    p[k] = value()
-                else:
-                    p[k] = value
-            return module.func(*args, **kwargs, **p)
-
-        wrapped_function.attr = configure['attr']
-        setattr(self, plugin_name, wrapped_function.__get__(self, self.__class__))
-
+            raise ValueError(f"Unknown plugin type: {configure['type']}")
         plugin_info['loaded'] = True
         sys.path.remove(plugin_info['location'])

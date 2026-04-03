@@ -1,0 +1,7 @@
+{
+  "name": "slab_simulation",
+  "dep": ["scipy"],
+  "scripts": {
+    "md_analysis": ["slab_free_energy.py"]
+  }
+}

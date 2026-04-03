@@ -1,10 +1,14 @@
-from ipamd.public.shared_data import config
+"""
+Output utils.
+"""
 import os
 import sys
-from rich.console import Console
-from multiprocessing import Process
 import signal
 import time
+from multiprocessing import Process
+from rich.console import Console
+from rich.table import Table
+from ipamd.public.shared_data import config
 
 def in_notebook():
     return 'ipykernel' in sys.modules
@@ -29,7 +33,15 @@ def error(message):
     if output_level <= OutputLevel.ERROR:
         console.print(f'Error: {message}', style='red')
 def output(message):
-    console.print(f'{message}')
+    console.print(message)
+
+def tabulate(title, headers, rows):
+    table = Table(title=title)
+    for header in headers:
+        table.add_column(header)
+    for row in rows:
+        table.add_row(*row)
+    console.print(table)
 
 def captured(func):
     def wrapper(*args, **kwargs):
@@ -75,6 +87,7 @@ def captured_async(parent_conn, timeout=1):
                         sys.exit(0)
 
                     signal.signal(signal.SIGTERM, cleanup)
+                    signal.signal(signal.SIGINT, cleanup)
                     buffer = ''
                     while True:
                         new_data = os.read(read_fd, 1024).decode()
@@ -90,6 +103,7 @@ def captured_async(parent_conn, timeout=1):
                 def cleanup(signum, frame):
                     process.terminate()
                 signal.signal(signal.SIGTERM, cleanup)
+                signal.signal(signal.SIGINT, cleanup)
                 process.start()
                 result = func(*args, **kwargs)
                 time.sleep(timeout + 1)

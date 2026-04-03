@@ -2,7 +2,6 @@ import copy
 import os
 import sys
 from importlib import import_module
-from tabulate import tabulate
 import inspect
 
 class PluginBase:
@@ -51,17 +50,6 @@ class PluginBase:
 
     def add_resource(self, name, value):
         self.__resource[name] = value
-    
-    def plugin_info(self):
-        table_header = ['Name','Location', 'Type', 'Status']
-        plugin_list = []
-        for plugin_name in self.__available_plugins.keys():
-            plugin = self.__available_plugins[plugin_name]
-            plugin_list.append(
-                [plugin_name, plugin['location'], plugin['type'], 'loaded' if plugin['loaded'] else '']
-            )
-        return tabulate(plugin_list, headers=table_header)
-
 
     def load_all(self):
         for plugin in self.__available_plugins.keys():

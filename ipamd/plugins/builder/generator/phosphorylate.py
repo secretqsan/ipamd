@@ -1,47 +1,58 @@
-import math
+import copy
+from ipamd.public.utils.output import warning
 
-def func(molecule, max_gap=4):
-    ff_param = {
-        'bond_harmonic': {}
+configure = {
+    "apply": ['ff']
+}
+def func(molecule, index, ff):
+    mol = copy.deepcopy(molecule)
+    ff = copy.deepcopy(ff)
+
+    target_atom = mol.atoms[index]
+    pt = target_atom['prototype']
+    typ = pt.get('type')
+    if typ != 'S' and typ != 'T' and typ != 'Y':
+        warning('Only SER, THR, and TYR can be phosphorylated.')
+
+    atom_definition = ff.atom_definition[typ]
+    if atom_definition['charge'].startswith('compute:'):
+        atom_definition['charge'] += '-1.0'
+    else:
+        atom_definition['charge'] = str(float(atom_definition['charge']) - 1.0)
+
+    if atom_definition['mass'].startswith('compute:'):
+        atom_definition['mass'] += '+79.982'
+    else:
+        atom_definition['mass'] = str(float(atom_definition['mass']) + 79.982)
+
+    ah_parameter = ff.ff_param['ah'][typ]
+
+    extra_ff = {
+        "atom_definition": {
+            f"{typ}P": atom_definition
+        },
+        "ff_param": {
+            "ah": {
+                f"{typ}P": ah_parameter
+            }
+        }
     }
 
-    folded_groups = []
-    last_rigid_index = -1
-    for index, atom in enumerate(molecule.atoms):
-        if atom['rigid_group'] >= 0:
-            if last_rigid_index == -1 or index - last_rigid_index > max_gap + 1:
-                folded_groups.append([])
-            folded_groups[-1].append(index)
-            last_rigid_index = index
-    for group in folded_groups:
-        n = len(group)
-        for i in range(n):
-            index_i = group[i]
-            molecule.atoms[index_i]['rigid_group'] = -1
-            coordinate_i = molecule.atoms[index_i]['offset']
-            for j in range(i + 1, n):
-                index_j = group[j]
-                coordinate_j = molecule.atoms[index_j]['offset']
-                distance = math.sqrt(
-                    (coordinate_i[0] - coordinate_j[0]) ** 2 +
-                    (coordinate_i[1] - coordinate_j[1]) ** 2 +
-                    (coordinate_i[2] - coordinate_j[2]) ** 2)
-                if index_j - index_i == 1:
-                    molecule.link(index_i, index_j, f'B-B-{index_i}-{index_j}')
-                    ff_param['bond_harmonic'][f'B-B-{index_i}-{index_j}'] = {
-                        'k': 8033.28,
-                        'r0': distance
-                    }
-                else:
-                    if distance < 0.9:
-                        molecule.link(index_i, index_j, f'en-{index_i}-{index_j}')
-                        ff_param['bond_harmonic'][f'en-{index_i}-{index_j}'] = {
-                            'k': 700,
-                            'r0': distance
-                        }
+    actual_charge = target_atom.get('charge')
+    actual_mass = target_atom.get('mass')
+    if actual_mass is not None:
+        if actual_mass.startswith('compute:'):
+            actual_mass += '+79.982'
+        else:
+            actual_mass = str(float(actual_mass) + 79.982)
+        target_atom.set('mass', actual_mass)
+    if actual_charge is not None:
+        if actual_charge.startswith('compute:'):
+            actual_charge += '-1.0'
+        else:
+            actual_charge = str(float(actual_charge) - 1.0)
+        target_atom.set('charge', actual_charge)
 
-    extra_ff_data = {
-        'atom_definition': {},
-        'ff_param': ff_param
-    }
-    return molecule, extra_ff_data
+    pt.set('type', f'{typ}P')
+
+    return mol, extra_ff

@@ -3,5 +3,5 @@ dist
 ipamd.egg-info
 demo/dev
 __pycache__
-.idea
+.vscode
 /ipa-core/

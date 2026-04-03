@@ -1,23 +1,45 @@
+"""
+class definition for molecular dynamics
+"""
 import copy
 import math
+from dataclasses import make_dataclass
+import sys
 from typing import List
-from enum import Enum
+import numpy as np
 from ipamd.public.utils.parser import range_to_list, value_of
-from ipamd.public.utils.output import *
+from ipamd.public.utils.output import error
 from ipamd.public import shared_data
 from ipamd.public.utils.plugin_manager import PluginBase
 from ipamd.public.models.common import AnalysisResult
-import numpy as np
-from dataclasses import make_dataclass
 
-ForceField = make_dataclass('ForceField', [('atom_definition', dict), ('ff_param', dict)])
+
+
+
+ForceField = make_dataclass(
+    'ForceField', 
+    [('atom_definition', dict), ('ff_param', dict)]
+)
 
 class Atom:
+    """
+    Atom class
+    """
     def __init__(self, velocity, atom_type, ff, mass=None, charge=None):
+        """
+        Initialize an atom
+        
+        :param velocity: velocity of the atom
+        :param atom_type: type of the atom
+        :param ff: force field
+        :param mass: mass of the atom
+        :param charge: charge of the atom
+        :return: None
+        """
         self.__ff = ff
         if atom_type not in self.__ff.atom_definition.keys():
             error('Invalid atom type ' + atom_type)
-            quit()
+            sys.exit(1)
         self.__type = atom_type
         self.__v = {
             'velocity': velocity,
@@ -26,24 +48,74 @@ class Atom:
         }
 
     def get(self, target):
+        """
+        Get the property of the atom
+        
+        :param target: property of the atom
+        :return: property of the atom
+        """
         if target == 'type':
             return self.__type
-        elif target in self.__v.keys() and self.__v[target] is not None:
+        elif target in self.__v and self.__v[target] is not None:
             return self.__v[target]
         else:
             try:
                 return self.__ff.atom_definition[self.__type][target]
             except KeyError:
                 error("Invalid atom property")
-                quit()
+                sys.exit(1)
+
+    def set(self, target, value):
+        """
+        Set the property of the atom
+        
+        :param target: property of the atom
+        :param value: value of the property
+        :return: None
+        """
+        if target == 'type':
+            self.__type = value
+        elif target in self.__v:
+            self.__v[target] = value
+        else:
+            error("Invalid atom property")
+            sys.exit(1)
+
+    def update(self, ff):
+        """
+        Update the force field of the atom
+        
+        :param ff: force field
+        :return: None
+        """
+        self.__ff = ff
 
 class Residue:
+    """
+    Residue class
+    """
     def __init__(self, type_):
+        """
+        Initialize a residue
+        
+        :param type_: type of the residue
+        :return: None
+        """
         self.atom_list = []
         self.type_ = type_
 
 class Molecule:
+    """
+    Molecule class
+    """
     def __init__(self, type_, cg):
+        """
+        Initialize a molecule
+        
+        :param type_: type of the molecule
+        :param cg: corse graining method
+        :return: None
+        """
         self.type_ = type_
         self.cg = cg
         self.atoms = []
@@ -57,6 +129,15 @@ class Molecule:
             bond=None,
             rigid_group=-1
     ):
+        """
+        Add an atom to the molecule
+        
+        :param atom: atom to be added
+        :param coordinate: coordinate of the atom
+        :param bond: bond between the atom and the previous atom
+        :param rigid_group: rigid group of the atom
+        :return: None
+        """
         self.atoms.append({
             "prototype": atom,
             "links": [],
@@ -64,7 +145,6 @@ class Molecule:
             'rigid_group': rigid_group,
         })
         self.length += 1
-
         if self.__activated_index == -1:
             self.__activated_index = 0
         else:
@@ -74,6 +154,14 @@ class Molecule:
                 self.link(previous_index, self.__activated_index, bond)
 
     def link(self, atom1, atom2, type_=''):
+        """
+        Link two atoms in the molecule
+        
+        :param atom1: index of the first atom
+        :param atom2: index of the second atom
+        :param type_: type of the bond
+        :return: None
+        """
         atom1, atom2 = min(atom1, atom2), max(atom1, atom2)
         type1 = self.atoms[atom1]['prototype'].get('type')
         type2 = self.atoms[atom2]['prototype'].get('type')
@@ -84,7 +172,14 @@ class Molecule:
             }
         )
 
-    def transform(self, M, by='zero'):
+    def transform(self, m, by='zero'):
+        """
+        Transform the molecule
+        
+        :param m: transformation matrix
+        :param by: center or zero
+        :return: None
+        """
         center = np.array([0.0, 0.0, 0.0])
         if by == 'center':
             for atom in self.atoms:
@@ -98,11 +193,21 @@ class Molecule:
             z = old_pos[2] - center[2]
             coord = np.array([x, y, z])
 
-            new_coord = np.dot(coord, M)
+            new_coord = np.dot(coord, m)
             new_coord += center
             atom['offset'] = (new_coord[0], new_coord[1], new_coord[2])
 
     def rotate(self, theta_x, theta_y, theta_z, unit='degree', by='zero'):
+        """
+        Rotate the molecule
+        
+        :param theta_x: angle of rotation around x axis
+        :param theta_y: angle of rotation around y axis
+        :param theta_z: angle of rotation around z axis
+        :param unit: degree of the angle
+        :param by: center or zero
+        :return: None
+        """
         if unit == 'degree':
             theta_x = math.radians(theta_x)
             theta_y = math.radians(theta_y)
@@ -135,10 +240,21 @@ class Molecule:
             atom['offset'] = (new_x, new_y, new_z)
 
     def move(self, t):
+        """
+        Move the molecule
+        
+        :param t: translation vector
+        :return: None
+        """
         for atom in self.atoms:
             atom['offset'] = (atom['offset'][0] + t[0], atom['offset'][1] + t[1], atom['offset'][2] + t[2])
 
     def __bonds(self):
+        """
+        Get the bonds in the molecule
+        
+        :return: list of bonds
+        """
         bond_list = []
         for i in range(len(self.atoms)):
             atom1 = self.atoms[i]
@@ -152,6 +268,13 @@ class Molecule:
         return bond_list
 
     def distance(self, index1, index2):
+        """
+        Get the distance between two atoms
+        
+        :param index1: index of the first atom
+        :param index2: index of the second atom
+        :return: distance between the two atoms
+        """
         d = math.sqrt(
             (self.atoms[index1]['offset'][0] - self.atoms[index2]['offset'][0]) ** 2 +
             (self.atoms[index1]['offset'][1] - self.atoms[index2]['offset'][1]) ** 2 +
@@ -160,6 +283,11 @@ class Molecule:
         return d
 
     def properties(self):
+        """
+        Get the properties of the molecule
+        
+        :return: dictionary of properties
+        """
         result = {
             'type': [],
             'mass': [],
@@ -206,7 +334,7 @@ class Molecule:
         Q_centered = Q - center_Q
 
         H = np.dot(P_centered.T, Q_centered)
-        U, S, Vt = np.linalg.svd(H)
+        U, _, Vt = np.linalg.svd(H)
         R = np.dot(U, Vt)
         if np.linalg.det(R) < 0:
             Vt[2, :] *= -1
@@ -234,6 +362,14 @@ class Environment:
                 'ph': 7.0,
                 'pressure': 1,
                 'epsilon': Environment.__epsilon(298)
+            }
+        elif name == 'cytoplasm':
+            self.values = {
+                'ionic_strength': 0.154,
+                'temperature': 310,
+                'ph': 7.2,
+                'pressure': 1,
+                'epsilon': Environment.__epsilon(310)
             }
         else:
             error('unknown system')
@@ -274,7 +410,14 @@ class Frame:
         self.no = no
         self.molecules = []
 
-    def add_molecule(self, molecule, offset=[0, 0, 0]):
+    def add_molecule(self, molecule, offset=(0, 0, 0)):
+        """
+        Add a molecule to the frame
+        
+        :param molecule: molecule to add
+        :param offset: offset of the molecule
+        :return: None
+        """
         self.molecules.append({
             'prototype': copy.deepcopy(molecule),
             'offset': offset
@@ -355,6 +498,9 @@ class Frame:
         return result
 
 class Box(PluginBase):
+    """
+    Simulation Box Class
+    """
     def __init__(self, x, y, z, force_field, persistency_dir):
         super().__init__([
             shared_data.module_installation_dir + '/plugins/builder/converter',
@@ -378,7 +524,7 @@ class Box(PluginBase):
         )
         self.add_resource('ff', self.force_field)
         self.add_resource('persistency_dir', self.persistency_dir)
-        if config.get('auto_load'):
+        if shared_data.config.get('auto_load'):
             self.load_all()
 
     def set_box_size(self, x, y, z):
@@ -412,7 +558,7 @@ class Box(PluginBase):
             result.parse(res)
             return result
         else:
-            if method.attr.__contains__('target') and method.attr['target'] == 'multi':
+            if "target" in method.attr and method.attr['target'] == 'multi':
                 target_frames = []
                 for i in target_frame:
                     target_frames.append(self.frame(i).current_frame())
@@ -445,21 +591,36 @@ class Box(PluginBase):
         return self.frames[self.__current_frame]
 
     def clean(self):
+        """
+        clean all loaded frames
+        """
         self.__current_frame = -1
         self.frames = []
         return self
 
 class Unit:
+    """
+    scale factor for units
+    """
     class TimeScale:
+        """
+        time scale factor
+        """
         fs = 0.001
         ps = 1
         ns = 1000
         us = 1000000
 
     class LengthScale:
+        """
+        length scale factor
+        """
         nm = 1
         A = 0.1
 
     class Unitless:
+        """
+        unitless scale factor
+        """
         rad = 1
         degree = math.pi / 180

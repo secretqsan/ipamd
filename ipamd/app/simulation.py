@@ -1,19 +1,23 @@
 import copy
 import json
-from rich.progress import Progress, BarColumn, TimeElapsedColumn, TimeRemainingColumn
-from importlib import import_module
-from ipamd.public.utils.parser import value_of
-from ipamd.public.utils.plugin_manager import PluginBase
-from ipamd.public.utils.output import *
-from ipamd.public import shared_data
 from multiprocessing import Process, Pipe
 import re
+import signal
+import os
+import time
+from importlib import import_module
+from rich.progress import Progress, BarColumn, TimeElapsedColumn, TimeRemainingColumn
 from numba import cuda
+from ipamd.public.utils.parser import value_of
+from ipamd.public.utils.plugin_manager import PluginBase
+from ipamd.public.utils.output import error, captured, info, captured_async, verbose
+from ipamd.public import shared_data
+
 
 class Simulation:
     class __Parser(PluginBase):
         def __init__(self):
-            extra_plugin_dir = config.get('simulation_plugin_dir')
+            extra_plugin_dir = shared_data.config.get('simulation_plugin_dir')
             plugin_dir = ([
                 shared_data.module_installation_dir + '/plugins/simulation/integrator',
                 shared_data.module_installation_dir + '/plugins/simulation/force'
@@ -32,6 +36,9 @@ class Simulation:
 
     @property
     def working_dir(self):
+        """
+        The working directory of the simulation.
+        """
         return self.__app.working_dir
 
     def new_simulation(self,
@@ -43,12 +50,27 @@ class Simulation:
                        run_step=0, period=0,
                        thermo_bath='langevin_nvt',
                        res_auto_read=True,
-                       minimize_energy=True):
+                       minimize_energy=True
+        ):
+        """
+        Create a new simulation job.
+
+        @param simulation_box: The simulation box.
+        @param job_name: The name of the simulation job.
+        @param dt: The time step of the simulation.
+        @param total_time: The total time of the simulation.
+        @param snap_shot: The snapshot interval of the simulation.
+        @param run_step: The total number of steps of the simulation.
+        @param period: The period of the simulation.
+        @param thermo_bath: The thermal bath of the simulation.
+        @param res_auto_read: Whether to automatically read the results of the simulation.
+        @param minimize_energy: Whether to minimize the energy of the simulation.
+        """
         if total_time != 0 and snap_shot!=0:
             run_step = int(total_time / dt)
             period = int(run_step / snap_shot)
 
-        simulation = self.__Simulation_Job(
+        return self.__Simulation_Job(
             simulation_box=simulation_box,
             job_name=job_name,
             run_step=run_step,
@@ -63,10 +85,27 @@ class Simulation:
             res_auto_read=res_auto_read,
             minimize_energy=minimize_energy
         )
-        return simulation
 
     class __Simulation_Job:
-        def __init__(self, simulation_box, job_name, run_step, dt, parser, period, working_dir, gala_core, gpu_id, thermo_bath, force_field, res_auto_read, minimize_energy):
+        """
+        Simulation Job Class
+        """
+        def __init__(
+            self,
+            simulation_box,
+            job_name,
+            run_step,
+            dt,
+            parser,
+            period,
+            working_dir,
+            gala_core,
+            gpu_id,
+            thermo_bath,
+            force_field,
+            res_auto_read,
+            minimize_energy
+        ):
             self.__total_step = run_step
             self.__target_step = run_step
             self.__gpu_id = 0
@@ -99,19 +138,6 @@ class Simulation:
             parser = getattr(self.__parser, integrator)
             return parser(param, all_info, self.__gala_core)
 
-        @staticmethod
-        def __parse_gala_output(text):
-            lines = text.split('\n')
-            for line in lines:
-                if line.startswith('INFO : '):
-                    info(line[7:])
-                elif line.startswith('***Warning!'):
-                    warning(line[12:])
-                elif line.startswith('***Error!'):
-                    error(line[10:])
-                else:
-                    verbose(line)
-
         def __outputs(self):
             files = os.listdir(self.__working_dir)
             pattern = '^' + self.job_name + r'\.\d+\.xml$'
@@ -120,7 +146,7 @@ class Simulation:
             return sorted_list
 
         def __latest(self, file_list):
-            max_step = 0
+            max_step = -1
             latest_output = self.job_name
             for file in file_list:
                 digit = int(re.findall(r'\d+', file)[-1])
@@ -130,6 +156,10 @@ class Simulation:
             return max_step, latest_output
 
         def clean_cache(self, remove_info=True):
+            """
+            Clean the data of the previous simulation.
+            @param remove_info: Whether to remove the info file.
+            """
             matching_files = self.__outputs()
             for file in matching_files:
                 os.remove(os.path.join(self.__working_dir, file))
@@ -143,18 +173,36 @@ class Simulation:
             if remove_info and os.path.exists(os.path.join(self.__working_dir, self.job_name + '.info')):
                 os.remove(os.path.join(self.__working_dir, self.job_name + '.info'))
 
+        def exist(self):
+            """
+            Check if the simulation exists.
+            @return: Whether the simulation exists.
+            """
+            info_file_path = os.path.join(self.__working_dir, self.job_name + '.info')
+            return os.path.exists(info_file_path)
+
         def run(self, yes=''):
+            """
+            Run the simulation.
+            @param yes: skip the interaction with the user.
+            """
             ready_to_run = True
             input_file_path = os.path.join(self.__working_dir, self.job_name + '.xml')
             new_simulation = False
-            if os.path.exists(os.path.join(self.__working_dir, self.job_name + '.info')):
-                with open(os.path.join(self.__working_dir, self.job_name + '.info'), 'r') as f:
+            info_file_path = os.path.join(self.__working_dir, self.job_name + '.info')
+            if self.exist():
+                with open(info_file_path, 'r', encoding='utf-8') as f:
                     simulation_info = json.load(f)
                     run_step = simulation_info['run_step']
                     matching_files = self.__outputs()
                     max_step, latest_output = self.__latest(matching_files)
-                    if max_step < run_step and max_step != 0:
-                        if yes=='y' or (yes != 'n' and input('Previous simulation not finished, continue? (y/n)') == 'y'):
+                    def make_sure(hint, yes, no, override):
+                        if override:
+                            return override == yes
+                        return input(f"{hint} ({yes}/{no}): ")  == yes
+                    
+                    if max_step < run_step and max_step != -1:
+                        if make_sure('Previous simulation not finished, continue?', 'y', 'n', yes):
                             input_file_path = os.path.join(self.__working_dir, latest_output + '.xml')
                             remaining_step = run_step - max_step
                             self.__total_step = remaining_step
@@ -163,7 +211,7 @@ class Simulation:
                             self.clean_cache()
                             new_simulation = True
                     else:
-                        if yes=='y' or (yes != 'n' and input('Find previous simulation, rerun? (y/n)') == 'y'):
+                        if make_sure('Find previous simulation, rerun?', 'y', 'n', yes):
                             self.clean_cache()
                             new_simulation = True
                         else:
@@ -172,7 +220,7 @@ class Simulation:
                 new_simulation = True
 
             if new_simulation:
-                with open(os.path.join(self.__working_dir, self.job_name + '.info'), 'w') as f:
+                with open(info_file_path, 'w', encoding='utf-8') as f:
                     data = {
                         'job_name': self.job_name,
                         'run_step': self.__total_step,
@@ -186,16 +234,19 @@ class Simulation:
                 self.__simulation_box.to_xml(self.job_name)
                 if new_simulation and self.__should_minimize_energy:
                     self.__minimize_energy(input_file_path)
-                    info('overwriting ' + input_file_path + ' with energy minimized configuration')
+                    em_main_filename = f'{self.job_name}_em'
+                    em_file_path = os.path.join(self.__working_dir, f'{em_main_filename}.xml')
+                    info(f'writing {em_file_path} with energy minimized configuration')
                     matching_files = self.__outputs()
                     max_step, latest_output = self.__latest(matching_files)
                     self.__simulation_box.clean()
                     self.__simulation_box.new_frame()
                     self.__simulation_box.read_xml(latest_output)
-                    self.__simulation_box.to_xml(self.job_name)
+                    self.__simulation_box.to_xml(em_main_filename)
+                    input_file_path = em_file_path
                     for old_file in matching_files:
                         os.remove(os.path.join(self.__working_dir, old_file))
-                self.__run_simulation(str(input_file_path))
+                self.__run_simulation(input_file_path)
 
             if self.__res_auto_read:
                 self.__simulation_box.clean()
@@ -213,8 +264,8 @@ class Simulation:
             return self.__gala_core.AllInfo(build_method, perform_config)
 
         @captured
-        def __init_app(self, all_info):
-            return self.__gala_core.Application(all_info, 0.002)
+        def __init_app(self, all_info, dt):
+            return self.__gala_core.Application(all_info, dt)
 
         @captured
         def __init_force(self, all_info, target_app):
@@ -222,13 +273,13 @@ class Simulation:
             for force in self.__force_field.ff_param:
                 params = copy.deepcopy(self.__force_field.ff_param[force])
                 for key in params.keys():
-                    if type(params[key]) is dict:
+                    if isinstance(params[key], dict):
                         for sub_key in params[key].keys():
                             params[key][sub_key] = value_of(params[key][sub_key], lookup_table)
                     else:
                         params[key] = value_of(params[key], lookup_table)
                 f = self.__parse_force(all_info, force, params)
-                if type(f) is list:
+                if isinstance(f, list):
                     for sf in f:
                         target_app.add(sf)
                 else:
@@ -251,8 +302,11 @@ class Simulation:
         def __init_log(self, all_info, target_app, period):
             group = self.__gala_core.ParticleSet(all_info, "all")
             comp_info = self.__gala_core.ComputeInfo(all_info, group)
-            d_info = self.__gala_core.DumpInfo(all_info, comp_info,
-                                               self.__working_dir + '/' + self.job_name + '.log')
+            d_info = self.__gala_core.DumpInfo(
+                all_info,
+                comp_info,
+                self.__working_dir + '/' + self.job_name + '.log'
+            )
             d_info.setPeriod(int(period))
             target_app.add(d_info)
 
@@ -288,7 +342,8 @@ class Simulation:
             verbose('reading input file ' + input_file_path)
             em_step = 1e4
             all_info, _ = self.__init_info(input_file_path)
-            app, _ = self.__init_app(all_info)
+            app, _ = self.__init_app(all_info, dt=0.001)
+            self.__init_force(all_info, app)
             self.__init_integrator(all_info, app, type_='em')
             self.__init_essentials(all_info, app)
             self.__init_snapshot(all_info, app, em_step)
@@ -301,7 +356,7 @@ class Simulation:
 
         def __run_simulation(self, input_file_path):
             all_info, _ = self.__init_info(input_file_path)
-            app, _ = self.__init_app(all_info)
+            app, _ = self.__init_app(all_info, dt=self.__dt)
             self.__init_force(all_info, app)
             self.__init_essentials(all_info, app)
             self.__init_log(all_info, app, self.period)
@@ -312,6 +367,7 @@ class Simulation:
 
             printer_process = Process(target=self.__printer, args=(child_conn,))
             printer_process.start()
+
             @captured_async(parent_conn, timeout=0.1)
             def run_md():
                 app.run(self.__total_step)
@@ -321,6 +377,7 @@ class Simulation:
         def __printer(self, conn):
             def exit_(signum, frame):
                 os.kill(os.getppid(), signal.SIGKILL)
+                os._exit(0)
 
             signal.signal(signal.SIGINT, exit_)
             signal.signal(signal.SIGTERM, exit_)
@@ -342,7 +399,6 @@ class Simulation:
                     message = conn.recv()
                     for line in message.split('\n'):
                         if '--start--' in line:
-                            start_time = time.time()
                             task = progress.add_task(self.job_name, total=self.__target_step)
                             progress.update(task,
                                             description=f'{self.job_name}(TPS: *)',

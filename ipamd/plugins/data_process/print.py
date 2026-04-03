@@ -20,7 +20,7 @@ def _(data: Scalar, precision):
     output(f'{data.data:.{precision}f} {data.meta['unit']}')
 
 @print_data.register
-def _(data: Vector, precision=3):
+def _(data: Vector, precision):
     points = []
     for i in range(len(data.data)):
         x = data.meta['axis'][i]
@@ -33,17 +33,18 @@ def _(data: Vector, precision):
     tabulate('', data.meta['x_axis'], [[f'{y:.{precision}f}' for y in data.data]])
 
 @print_data.register
-def _(data: Series, precision):
+def _(data: PointSet, precision):
     points = []
     for point in data.data:
-        points.append(f'({point[0]:.{precision}f}, {point[1]:.{precision}f})')
-    output(' '.join(points))
+        points.append([f'{point[0]:.{precision}f}', f'{point[1]:.{precision}f}'])
+    tabulate('', [data.meta['x_label'], data.meta['y_label']], points)
 
 @print_data.register
 def _(data: Matrix, precision):
-    for row in data.data:
-        formatted_row = ', '.join([f'{x:.{precision}f}' for x in row])
-        output(f'[{formatted_row}]')
+    rows = []
+    for row, label in zip(data.data, data.meta['y_axis']):
+        rows.append([label, *[f'{x:.{precision}f}' for x in row]])
+    tabulate('', ['*', *data.meta['x_axis']], rows)
 
 @print_data.register
 def _(data: Ratio, precision):

@@ -10,7 +10,7 @@ vector = Vector(
     title='vector',
     data=[1.0, 2.0, 3.0],
 )
-series = Series(
+point_set = PointSet(
     title='Temperature Over Time',
     data=[[0, 22.5], [1, 23.0], [2, 21.5], [3, 24.0]],
     x_label='Time (hours)',
@@ -24,8 +24,8 @@ matrix = Matrix(
 )
 ratio = Ratio(
     title='Success Rate',
-    data=[75, 25],
-    labels=['Success', 'Failure'],
+    data=[75, 2, 1],
+    labels=['Success', 'Failure', 'None'],
 )
 distribution = Distribution(
     title='Height Distribution',

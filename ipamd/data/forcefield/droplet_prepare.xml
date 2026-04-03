@@ -53,8 +53,6 @@
         <bond_harmonic>
             <B-B k="8033.28" r0="0.38"/>
         </bond_harmonic>
-        <centripetal>
-            <Z f="0.5" threshold="15"/>
-        </centripetal>
+        <centripetal f="0.5" threshold="10" shape="Sphere" direction="X"/>
     </ff_param>
 </ff>

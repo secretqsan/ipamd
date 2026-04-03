@@ -1,16 +1,21 @@
+"""
+base module of ipamd
+"""
 import multiprocessing
+import uuid
+import os
+import csv
+import shutil
+
+from Bio import SeqIO
+from numba import cuda
+
 from ipamd.public import shared_data
 from ipamd.public.utils.hardware import available_gpus
 from ipamd.public.utils.parser import range_to_list
-import uuid
 from ipamd.public.utils.output import warning, output, error, info
 from ipamd.public.utils.xml import read_xml
-from ipamd.app import Simulation, Analysis, Builder, Sakuanna
-import os
-from Bio import SeqIO
-import csv
-import shutil
-from numba import cuda
+from ipamd.app import Simulation, Analysis, Builder, Sakuanna, DataProcess, MdAnalysis
 from ipamd.public.models.md import ForceField
 
 config = shared_data.config
@@ -28,10 +33,7 @@ class App():
         self.name = None
 
         self.force_field = ForceField(atom_definition={}, ff_param={})
-        self.builder = Builder(self)
-        self.analysis = Analysis(self)
-        self.simulation = Simulation(self)
-        self.sakuanna = Sakuanna(self)
+
 
         if init_working_dir:
             self.switch(name)
@@ -44,9 +46,39 @@ class App():
             if extend_name == '.xml':
                 shared_data.available_ff.append(filename)
         self.use('default')
+        self.builder = Builder(self)
+        self.analysis = Analysis(self)
+        self.simulation = Simulation(self)
+        self.__sakuanna = None
+        self.__data_process = None
+        self.__mdanalysis = None
+
+    @property
+    def sakuanna(self):
+        if self.__sakuanna is None:
+            self.__sakuanna = Sakuanna(self)
+        return self.__sakuanna
+    
+    @property
+    def mdanalysis(self):
+        if self.__mdanalysis is None:
+            self.__mdanalysis = MdAnalysis(self)
+        return self.__mdanalysis
+
+    @property
+    def data_process(self):
+        if self.__data_process is None:
+            self.__data_process = DataProcess(self)
+        return self.__data_process
 
     def gen_link(self):
-        os.symlink(self.working_dir, os.path.join(os.getcwd(), self.name))
+        cwd = os.getcwd()
+        link_path = os.path.join(cwd, self.name)
+        if self.working_dir == cwd:
+            warning('The working directory is the current directory, no link created.')
+        else:
+            if not os.path.exists(link_path):
+                os.symlink(self.working_dir, link_path)
 
     def available_ff(self):
         return shared_data.available_ff
@@ -109,7 +141,7 @@ class App():
         shutil.copyfile(full_origin_path, full_dest_path)
 
 class OmicsLoader:
-    def __init__(self, path, condition=[]):
+    def __init__(self, path, condition=()):
         self.__path = path
         self.__files = os.listdir(self.__path)
         self.__condition = condition

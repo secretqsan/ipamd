@@ -1,10 +1,7 @@
 import copy
-from ipamd.public.models.common import AnalysisResult
+from ipamd.public.models.data import Ratio
 from ipamd.public.utils.output import *
 from ipamd.public.models.sequence import ProteinSequence
-configure = {
-    "type": 'function',
-}
 
 def func(protein: ProteinSequence, targets, format_='ratio'):
     all_amino_acids = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
@@ -44,15 +41,20 @@ def func(protein: ProteinSequence, targets, format_='ratio'):
         cnt_of_all_classes[target] = cnt
 
     total_length = len(protein)
-    cnt_of_all_classes['rest'] = total_length - sum(cnt_of_all_classes.values())
+    cnt_of_all_classes['others'] = total_length - sum(cnt_of_all_classes.values())
 
     if format_ == 'ratio':
         for key in cnt_of_all_classes:
             cnt_of_all_classes[key] = cnt_of_all_classes[key] / total_length
 
-    data = AnalysisResult(
+    data = []
+    labels = []
+    for key in cnt_of_all_classes:
+        data.append(cnt_of_all_classes[key])
+        labels.append(key)
+
+    return Ratio(
         title=f'Sequence statistic of {protein.name}',
-        data=cnt_of_all_classes,
-        type_=AnalysisResult.Type.RATIO
+        data=data,
+        labels=labels
     )
-    return data

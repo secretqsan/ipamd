@@ -1,11 +1,15 @@
-import requests
+import pypdbio
 from ipamd.public.utils.output import *
 configure = {
     "schema": 'io',
 }
 def func(id, working_dir):
-    url = "https://files.rcsb.org/download/" + id + ".pdb"
-    data = requests.get(url)
-    with open(working_dir + '/' + id + '.pdb', 'wb') as f:
-        f.write(data.content)
+    try:
+        pypdbio.fetch(
+            id,
+            working_dir + '/' + id + '.pdb',
+        )
+    except Exception:
+        error('Failed to download ' + id + ' from RCSB.')
+        return
     info('Downloaded ' + id + ' from RCSB.')

@@ -1,42 +1,48 @@
-from setuptools import setup, find_packages
+"""
+IPAMD Setup Script
+"""
 import os
+from setuptools import setup, find_packages
 home_dir = os.path.expanduser('~')
 config_dir = os.path.join(home_dir, '.config/ipamd')
 
+with open('README.md', 'r', encoding='utf-8') as f:
+    long_description = f.read()
 setup(
     name='ipamd',
     python_requires='>=3.12',
     license='LGPL-3.0',
-    long_description=open('README.md').read(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
+    entry_points={
+        'console_scripts': [
+            'ipamd = ipamd.cli:main'
+        ],
+    },
     description='A Python package for MD simulations and analysis of biomolecules',
-    version='0.0.12',
+    version='0.0.16',
     include_package_data=True,
     package_data={
         'ipamd': [
             "data/forcefield/*", 
             "app/lib/*",
-            "plugins/analysis/data_process/*",
-            "plugins/analysis/operator/*",
-            "plugins/builder/converter/*",
-            "plugins/builder/genbox/*",
-            "plugins/builder/generator/*",
-            "plugins/simulation/force/*",
-            "plugins/simulation/integrator/*",
-            "plugins/sakuanna/*",
+            "plugins/**",
+            "meta/*"
         ]
     },
     data_files=[
     ],
     install_requires=[
-        'tabulate',
+        'numpy',
         'rich',
         'numba',
         'matplotlib',
         'biopython',
         'requests',
         'pandas',
-        'numpy'
+        'numpy',
+        'pybioseq',
+        'pypdbio'
     ],
     packages=find_packages(),
     author='Xiaoyang Liu',

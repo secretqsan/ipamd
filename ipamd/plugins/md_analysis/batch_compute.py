@@ -1,21 +1,15 @@
 from ipamd.public.utils.plugin_manager_v1 import PluginBase
-def func(box, target_frame, type1='', type2='', threshold=4, mode='inter', cm=None):
-    if cm is None:
-        cm = PluginBase.call(
-            'contact_map_v1',
-            box=box,
-            target_frame=target_frame,
-            type1=type1,
-            type2=type2,
-            threshold=threshold,
-            mode=mode
+from ipamd.public.utils.parser import range_to_list
+def func(function, box, target_frame, **kargs):
+    results = []
+    for frame in range_to_list(target_frame):
+        results.append(
+            PluginBase.call(function, box=box, target_frame=frame, **kargs)
         )
-    cn = PluginBase.call(
-        'flatten',
-        cm,
-        module = 'data_process',
-        axis = 1
+    res = PluginBase.call(
+        'average',
+        *results,
+        module='data_process'
     )
-    cn.meta['y_label'] = f'Contact Number'
-    cn.meta['title'] = f'Contact Number'
-    return cn
+
+    return res

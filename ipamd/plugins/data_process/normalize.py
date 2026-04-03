@@ -1,48 +1,58 @@
+import copy
 from functools import singledispatch
 from ipamd.public.models.data import *
-from ipamd.public.utils.output import output, tabulate
 import numpy as np
-import csv
-
-def func(data, filename):
-    with open(filename, 'w') as file:
-        csv_writer = csv.writer(file)
-        write_data(data, csv_writer)
 
 @singledispatch
-def write_data(data, csv_writer):
-    raise NotImplementedError(f'Output for data type {type(data)} is not implemented.')
+def func(data: Ratio, **kargs):
+    sum = np.sum(data.data)
+    normalized_data = data.data / sum
+    res = copy.deepcopy(data)
+    res.data = normalized_data
+    if 'title' in kargs:
+        res.meta['title'] = kargs['title']
+    else:
+        res.meta['title'] = data.meta['title'] + ' normalized'
+    return res
 
-@write_data.register
-def _(data: Scalar, csv_writer):
-    csv_writer.writerow([data.data.item()])
+@func.register(Vector)
+@func.register(Matrix)
+def _(data, **kargs):
+    min_value = np.min(data.data)
+    max_value = np.max(data.data)
+    normalized_data = (data.data - min_value) / (max_value - min_value)
+    res = copy.deepcopy(data)
+    res.data = normalized_data
+    if 'title' in kargs:
+        res.meta['title'] = kargs['title']
+    else:
+        res.meta['title'] = data.meta['title'] + ' normalized'
+    return res
 
-@write_data.register
-def _(data: Vector, csv_writer):
-    csv_writer.writerow(data.meta['x_axis'])
-    csv_writer.writerow(data.data.tolist())
+@func.register
+def _(data: PointSet,  **kargs):
+    if 'target' not in kargs:
+        normalize_x = True
+        normalize_y = True
+    else:
+        normalize_x = 'x' in kargs['target']
+        normalize_y = 'y' in kargs['target']
+    res = copy.deepcopy(data)
+    if normalize_x:
+        x_data = data.data[:, 0]
+        min_value = np.min(x_data)
+        max_value = np.max(x_data)
+        x_data = (x_data - min_value) / (max_value - min_value)
+        res.data[:, 0] = x_data
+    if normalize_y:
+        y_data = data.data[:, 1]
+        min_value = np.min(y_data)
+        max_value = np.max(y_data)
+        y_data = (y_data - min_value) / (max_value - min_value)
+        res.data[:, 1] = y_data
+    if 'title' in kargs:
+        res.meta['title'] = kargs['title']
+    else:
+        res.meta['title'] = data.meta['title'] + ' normalized'
+    return res
 
-@write_data.register
-def _(data: Series, csv_writer):
-    csv_writer.writerow([data.meta['x_label'], data.meta['y_label']])
-    for vector in data.data:
-        csv_writer.writerow(vector.tolist())
-
-@write_data.register
-def _(data: Matrix, csv_writer):
-    csv_writer.writerow(['', *data.meta['x_axis']])
-    line_idx = 0
-    for vector in data.data:
-        csv_writer.writerow([data.meta['y_axis'][line_idx], *vector.tolist()])
-        line_idx += 1
-
-@write_data.register
-def _(data: Ratio, csv_writer):
-    csv_writer.writerow(data.meta['labels'])
-    csv_writer.writerow(data.data.tolist())
-
-@write_data.register
-def _(data: Distribution, csv_writer):
-    csv_writer.writerow([data.meta['label']])
-    for value in data.data:
-        csv_writer.writerow([value.item()])

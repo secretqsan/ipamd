@@ -1,31 +1,24 @@
-from ipamd.public.models.common import AnalysisResult
-configure = {
-    "schema": 'full'
-}
-def func(slf, action='average', new_name=None):
-    result = AnalysisResult(
-        title=slf.title + '-flatten' if new_name is None else new_name,
-        type_=AnalysisResult.Type.UNKNOWN,
-        data={}
+from ipamd.public.models.data import *
+from functools import singledispatch
+import numpy as np
+
+@singledispatch
+def func(data:Vector, by='average', **kargs):
+    res_value = np.sum(data.data) if by != 'average' else np.average(data.data)
+    return Scalar(
+        title=kargs.get('title', data.meta['title'] + ' flattened'),
+        data=res_value,
+        unit=kargs.get('unit', '')
     )
-    match (slf.type, action):
-        case (AnalysisResult.Type.SCALAR, 'average') | (AnalysisResult.Type.SCALAR, 'sum'):
-            result.type = AnalysisResult.Type.SCALAR
-            result.data = slf.data
-        case (AnalysisResult.Type.VECTOR, 'average'):
-            result.type = AnalysisResult.Type.SCALAR
-            averaged_value = 0
-            for value in slf.data.values():
-                averaged_value += value
-            result.data = averaged_value / len(slf.data)
-        case (AnalysisResult.Type.VECTOR, 'sum'):
-            result.type = AnalysisResult.Type.SCALAR
-            summed_value = 0
-            for value in slf.data.values():
-                summed_value += value
-            result.data = summed_value
-        case (AnalysisResult.Type.MATRIX, 'average'):
-            pass
-        case (AnalysisResult.Type.MATRIX, 'sum'):
-            pass
-    return result
+
+@func.register
+def _(data:Matrix, by='average', **kargs):
+    res_value = (
+        np.sum(data.data, axis=kargs['axis'])) if by != 'average' else np.average(data.data, axis=kargs['axis'])
+    return Vector(
+        title=kargs.get('title', data.meta['title'] + ' flattened'),
+        data=res_value,
+        x_axis=kargs.get('x_axis', data.meta['x_axis'] if kargs['axis']==0 else data.meta['y_axis']),
+        x_label=kargs.get('x_label', data.meta['x_label'] if kargs['axis']==0 else data.meta['y_label']),
+        y_label=kargs.get('y_label', data.meta['y_label'] if kargs['axis']==1 else data.meta['x_label']),
+    )
