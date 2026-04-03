@@ -1,46 +1,40 @@
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
-from ipamd.public.models.common import AnalysisResult
-from ipamd.public.utils.output import *
+from matplotlib import pyplot as plt
+from functools import singledispatch
+from ipamd.public.models.data import *
+from ipamd.public.utils.output import warning
+from ipamd.public.utils.plugin_manager_v1 import PluginBase
 
-configure = {
-    "schema": 'full'
-}
-def func(slf, ref=None, style={}, save=False):
-    plt.rc('font', family='Times New Roman')
-    color = ''
-    legend = None
-    title = None
-    size = None
-    x_label = None
-    y_label = None
-    if 'x_label' in style:
-        x_label = style['x_label']
-    if 'y_label' in style:
-        y_label = style['y_label']
-    if 'color' in style:
-        color = style['color']
-    if 'legend' in style:
-        legend = style['legend']
-    if 'size' in style:
-        size = style['size']
-    if 'title' in style:
-        title = style['title']
-    #global configure
-    plt.rcParams['axes.linewidth'] = 1.5
-    plt.rcParams['xtick.major.width'] = 1.5
-    plt.rcParams['ytick.major.width'] = 1.5
-    if size is not None:
-        plt.figure(figsize=size)
-    if x_label is not None:
-        plt.xlabel(x_label, fontsize=22)
-    if y_label is not None:
-        plt.ylabel(y_label, fontsize=22)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.title(title if title != None else slf.title)
+@singledispatch
+def plot(data):
+    pass
 
+@plot.register
+def _(data: Vector):
+    pass
+
+@plot.register
+def _(data: Scalar):
+    warning("Scalar data cannot be plotted.")
+    PluginBase.call('print', data)
+
+@plot.register
+def _(data: Matrix):
+    plt.imshow(data.data, cmap='viridis', origin='lower')
+    plt.colorbar()
+    plt.title(data.meta['title'])
+    plt.xlabel(data.meta['x_label'])
+    plt.xticks(data.meta['x_axis'])
+    plt.ylabel(data.meta['y_label'])
+    plt.yticks(data.meta['y_axis'])
+
+def func(data, style=None, save_figure=True):
+    with plt.rc_context(style):
+        plot(data)
+        plt.show()
+        if save_figure:
+            plt.savefig(f"{data.meta['title']}.png")
+
+def f(slf, ref=None, style={}, save=False):
 
     match slf.type:
         case AnalysisResult.Type.SCALAR:

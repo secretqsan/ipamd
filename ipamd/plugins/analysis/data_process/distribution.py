@@ -1,9 +1,6 @@
 from ipamd.public.models.common import AnalysisResult
 from ipamd.public.utils.output import error
 
-configure = {
-    "schema": 'full'
-}
 def func(slf, bins=10, new_name=None):
     result = AnalysisResult(
         title = slf.title + '-distro' if new_name is None else new_name,

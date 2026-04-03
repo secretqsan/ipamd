@@ -19,7 +19,11 @@ def func(slf, action='average', new_name=None):
                 averaged_value += value
             result.data = averaged_value / len(slf.data)
         case (AnalysisResult.Type.VECTOR, 'sum'):
-            pass
+            result.type = AnalysisResult.Type.SCALAR
+            summed_value = 0
+            for value in slf.data.values():
+                summed_value += value
+            result.data = summed_value
         case (AnalysisResult.Type.MATRIX, 'average'):
             pass
         case (AnalysisResult.Type.MATRIX, 'sum'):
