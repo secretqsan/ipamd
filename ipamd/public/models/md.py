@@ -13,9 +13,6 @@ from ipamd.public import shared_data
 from ipamd.public.utils.plugin_manager import PluginBase
 from ipamd.public.models.common import AnalysisResult
 
-
-
-
 ForceField = make_dataclass(
     'ForceField', 
     [('atom_definition', dict), ('ff_param', dict)]
@@ -247,7 +244,11 @@ class Molecule:
         :return: None
         """
         for atom in self.atoms:
-            atom['offset'] = (atom['offset'][0] + t[0], atom['offset'][1] + t[1], atom['offset'][2] + t[2])
+            atom['offset'] = (
+                atom['offset'][0] + t[0],
+                atom['offset'][1] + t[1],
+                atom['offset'][2] + t[2]
+            )
 
     def __bonds(self):
         """
@@ -503,8 +504,8 @@ class Box(PluginBase):
     """
     def __init__(self, x, y, z, force_field, persistency_dir):
         super().__init__([
-            shared_data.module_installation_dir + '/plugins/builder/converter',
-            shared_data.module_installation_dir + '/plugins/builder/genbox'
+            shared_data.module_installation_dir + '/plugins/converter',
+            shared_data.module_installation_dir + '/plugins/genbox'
         ])
 
         self.persistency_dir = persistency_dir
@@ -533,7 +534,7 @@ class Box(PluginBase):
         self.z = z
 
     def in_solvent(self, environment):
-        if type(environment) is str:
+        if isinstance(environment, str):
             self.env = Environment(environment)
         else:
             self.env = environment

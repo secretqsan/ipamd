@@ -1,7 +1,11 @@
 {
   "name": "slab_simulation",
+  "info": "Slab simulation supporting packge",
   "dep": ["scipy"],
   "scripts": {
     "md_analysis": ["slab_free_energy.py"]
+  },
+  "data": {
+    "forcefield": ["slab_prepare.xml"]
   }
 }

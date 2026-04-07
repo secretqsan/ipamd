@@ -1,6 +1,6 @@
 def func(ff_param, all_info, gala_core):
     rcut_max = float(ff_param['rcut'])
-    neighbor_list = gala_core.NeighborList(all_info, rcut_max * 1.5, rcut_max * 0.2)
+    neighbor_list = gala_core.NeighborList(all_info, rcut_max, rcut_max * 0.2)
     neighbor_list.exclusion(["bond"])
     wf_force = gala_core.WFForce(all_info, neighbor_list, rcut_max)
     atom_type = all_info.getBasicInfo().getParticleTypes()

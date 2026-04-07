@@ -19,8 +19,8 @@ class Simulation:
         def __init__(self):
             extra_plugin_dir = shared_data.config.get('simulation_plugin_dir')
             plugin_dir = ([
-                shared_data.module_installation_dir + '/plugins/simulation/integrator',
-                shared_data.module_installation_dir + '/plugins/simulation/force'
+                shared_data.module_installation_dir + '/plugins/integrator',
+                shared_data.module_installation_dir + '/plugins/force'
             ] + extra_plugin_dir)
             super().__init__(plugin_dir)
             self.load_all()

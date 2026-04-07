@@ -1,10 +1,10 @@
 from ipamd.public.utils.plugin_manager import PluginBase
-from ipamd.public.shared_data import *
+from ipamd.public import shared_data
 
 class Builder(PluginBase):
     def __init__(self, app):
-        extra_plugin_dir = config.get('builder_plugin_dir')
-        plugin_dir = [module_installation_dir + '/plugins/builder/generator'] + extra_plugin_dir
+        extra_plugin_dir = shared_data.config.get('builder_plugin_dir')
+        plugin_dir = [shared_data.module_installation_dir + '/plugins/generator'] + extra_plugin_dir
         super().__init__(plugin_dir)
         self.__app = app
         self.def_schema('io', {
@@ -12,5 +12,5 @@ class Builder(PluginBase):
         })
         self.add_resource('cuda', self.__app.cuda)
         self.add_resource('ff', lambda: self.__app.force_field)
-        if config.get('auto_load'):
+        if shared_data.config.get('auto_load'):
             self.load_all()

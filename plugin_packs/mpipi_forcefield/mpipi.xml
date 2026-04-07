@@ -41,6 +41,10 @@
         <V0 charge="0" mass="99.13"/>
         <W0 charge="0" mass="186.22"/>
         <Y0 charge="0" mass="163.18"/>
+        <Ad charge="-0.75" mass="329.20"/>
+        <Ud charge="-0.75" mass="306.20"/>
+        <Cd charge="-0.75" mass="305.20"/>
+        <Gd charge="-0.75" mass="345.20"/>
     </atom_definition>
     <ff_param>
         <wf rcut="3">
@@ -864,6 +868,176 @@
             <I-L0 epsilon="0.017003776" sigma="0.688318469" mu="4"/>
             <V0-I0 epsilon="0.010765432" sigma="0.6745753" mu="4"/>
             <L0-I0 epsilon="0.017003776" sigma="0.688318469" mu="4"/>
+            <M-Ad epsilon="1.153871888" sigma="0.7453975" mu="3"/>
+            <G-Ad epsilon="1.27291924" sigma="0.6567555" mu="3"/>
+            <K-Ad epsilon="0.66665764" sigma="0.755567" mu="3"/>
+            <T-Ad epsilon="1.135449736" sigma="0.7164531" mu="3"/>
+            <R-Ad epsilon="2.518416544" sigma="0.7639526" mu="3"/>
+            <A-Ad epsilon="1.17461616" sigma="0.6855037" mu="3"/>
+            <D-Ad epsilon="1.236572832" sigma="0.7131761" mu="3"/>
+            <E-Ad epsilon="1.250225224" sigma="0.7308835" mu="3"/>
+            <Y-Ad epsilon="1.948041112" sigma="0.7586817" mu="3"/>
+            <V-Ad epsilon="1.082773176" sigma="0.7353" mu="3"/>
+            <L-Ad epsilon="1.094111816" sigma="0.7487036" mu="3"/>
+            <Q-Ad epsilon="1.490441216" sigma="0.7358925" mu="3"/>
+            <W-Ad epsilon="2.222327416" sigma="0.7753274" mu="3"/>
+            <F-Ad epsilon="1.890419064" sigma="0.7534775" mu="3"/>
+            <S-Ad epsilon="1.1999712" sigma="0.6926335" mu="3"/>
+            <H-Ad epsilon="1.128039872" sigma="0.7388891" mu="3"/>
+            <N-Ad epsilon="1.476634016" sigma="0.7181675" mu="3"/>
+            <P-Ad epsilon="1.235698376" sigma="0.7123078" mu="3"/>
+            <C-Ad epsilon="1.216104704" sigma="0.7082181" mu="3"/>
+            <I-Ad epsilon="1.071932432" sigma="0.768084" mu="3"/>
+            <M0-Ad epsilon="1.128546136" sigma="0.7460035" mu="3"/>
+            <G0-Ad epsilon="1.212029488" sigma="0.6569114" mu="3"/>
+            <K0-Ad epsilon="0.659507184" sigma="0.7564427" mu="3"/>
+            <T0-Ad epsilon="1.11589372" sigma="0.7171413" mu="3"/>
+            <R0-Ad epsilon="2.405707952" sigma="0.7640409" mu="3"/>
+            <A0-Ad epsilon="1.14350812" sigma="0.6859026" mu="3"/>
+            <D0-Ad epsilon="1.187046824" sigma="0.7133868" mu="3"/>
+            <E0-Ad epsilon="1.196431536" sigma="0.7310906" mu="3"/>
+            <Y0-Ad epsilon="1.685214784" sigma="0.7587451" mu="3"/>
+            <V0-Ad epsilon="1.081041" sigma="0.7447825" mu="3"/>
+            <L0-Ad epsilon="1.087283528" sigma="0.7503916" mu="3"/>
+            <Q0-Ad epsilon="1.363632544" sigma="0.7360169" mu="3"/>
+            <W0-Ad epsilon="1.876524" sigma="0.7753782" mu="3"/>
+            <F0-Ad epsilon="1.644881024" sigma="0.7535443" mu="3"/>
+            <S0-Ad epsilon="1.16078804" sigma="0.6929728" mu="3"/>
+            <H0-Ad epsilon="1.110960784" sigma="0.7389575" mu="3"/>
+            <N0-Ad epsilon="1.354431928" sigma="0.7182887" mu="3"/>
+            <P0-Ad epsilon="1.186134712" sigma="0.7125913" mu="3"/>
+            <C0-Ad epsilon="1.172310776" sigma="0.708535" mu="3"/>
+            <I0-Ad epsilon="1.071932432" sigma="0.768084" mu="3"/>
+            <Ad-Ad epsilon="2.142208" sigma="0.844" mu="3"/>
+            <M-Cd epsilon="0.783587888" sigma="0.7343975" mu="3"/>
+            <G-Cd epsilon="0.90263524" sigma="0.6457555" mu="3"/>
+            <K-Cd epsilon="0.44448724" sigma="0.744567" mu="3"/>
+            <T-Cd epsilon="0.765165736" sigma="0.7054531" mu="3"/>
+            <R-Cd epsilon="1.777848544" sigma="0.7529526" mu="3"/>
+            <A-Cd epsilon="0.80433216" sigma="0.6745037" mu="3"/>
+            <D-Cd epsilon="0.866288832" sigma="0.7021761" mu="3"/>
+            <E-Cd epsilon="0.879941224" sigma="0.7198835" mu="3"/>
+            <Y-Cd epsilon="1.577757112" sigma="0.7476817" mu="3"/>
+            <V-Cd epsilon="0.712489176" sigma="0.7243" mu="3"/>
+            <L-Cd epsilon="0.723827816" sigma="0.7377036" mu="3"/>
+            <Q-Cd epsilon="1.120157216" sigma="0.7248925" mu="3"/>
+            <W-Cd epsilon="1.852043416" sigma="0.7643274" mu="3"/>
+            <F-Cd epsilon="1.520135064" sigma="0.7424775" mu="3"/>
+            <S-Cd epsilon="0.8296872" sigma="0.6816335" mu="3"/>
+            <H-Cd epsilon="0.757755872" sigma="0.7278891" mu="3"/>
+            <N-Cd epsilon="1.1063542" sigma="0.7071675" mu="3"/>
+            <P-Cd epsilon="0.865414376" sigma="0.7013078" mu="3"/>
+            <C-Cd epsilon="0.845820704" sigma="0.6972181" mu="3"/>
+            <I-Cd epsilon="0.701644248" sigma="0.757084" mu="3"/>
+            <M0-Cd epsilon="0.758262136" sigma="0.7350035" mu="3"/>
+            <G0-Cd epsilon="0.841745488" sigma="0.6459114" mu="3"/>
+            <K0-Cd epsilon="0.437336784" sigma="0.7454427" mu="3"/>
+            <T0-Cd epsilon="0.74560972" sigma="0.7061413" mu="3"/>
+            <R0-Cd epsilon="1.665139952" sigma="0.7530409" mu="3"/>
+            <A0-Cd epsilon="0.773228304" sigma="0.6749026" mu="3"/>
+            <D0-Cd epsilon="0.816762824" sigma="0.7023868" mu="3"/>
+            <E0-Cd epsilon="0.826147536" sigma="0.7200906" mu="3"/>
+            <Y0-Cd epsilon="1.314934968" sigma="0.7477451" mu="3"/>
+            <V0-Cd epsilon="0.710761184" sigma="0.7337825" mu="3"/>
+            <L0-Cd epsilon="0.716999528" sigma="0.7393916" mu="3"/>
+            <Q0-Cd epsilon="0.993348544" sigma="0.7250169" mu="3"/>
+            <W0-Cd epsilon="1.50624" sigma="0.7643782" mu="3"/>
+            <F0-Cd epsilon="1.274597024" sigma="0.7425443" mu="3"/>
+            <S0-Cd epsilon="0.79050404" sigma="0.6819728" mu="3"/>
+            <H0-Cd epsilon="0.740676784" sigma="0.7279575" mu="3"/>
+            <N0-Cd epsilon="0.984143744" sigma="0.7072887" mu="3"/>
+            <P0-Cd epsilon="0.815850712" sigma="0.7015913" mu="3"/>
+            <C0-Cd epsilon="0.802026776" sigma="0.697535" mu="3"/>
+            <I0-Cd epsilon="0.701644248" sigma="0.757084" mu="3"/>
+            <Ad-Cd epsilon="1.771924" sigma="0.833" mu="3"/>
+            <Cd-Cd epsilon="1.40164" sigma="0.822" mu="3"/>
+            <M-Gd epsilon="1.162239888" sigma="0.7488975" mu="3"/>
+            <G-Gd epsilon="1.28128724" sigma="0.6602555" mu="3"/>
+            <K-Gd epsilon="0.67167844" sigma="0.759067" mu="3"/>
+            <T-Gd epsilon="1.143817736" sigma="0.7199531" mu="3"/>
+            <R-Gd epsilon="2.535152544" sigma="0.7674526" mu="3"/>
+            <A-Gd epsilon="1.18298416" sigma="0.6890037" mu="3"/>
+            <D-Gd epsilon="1.244940832" sigma="0.7166761" mu="3"/>
+            <E-Gd epsilon="1.258593224" sigma="0.7343835" mu="3"/>
+            <Y-Gd epsilon="1.956409112" sigma="0.7621817" mu="3"/>
+            <V-Gd epsilon="1.091141176" sigma="0.7388" mu="3"/>
+            <L-Gd epsilon="1.102479816" sigma="0.7522036" mu="3"/>
+            <Q-Gd epsilon="1.498809216" sigma="0.7393925" mu="3"/>
+            <W-Gd epsilon="2.230695416" sigma="0.7788274" mu="3"/>
+            <F-Gd epsilon="1.898787064" sigma="0.7569775" mu="3"/>
+            <S-Gd epsilon="1.2083392" sigma="0.6961335" mu="3"/>
+            <H-Gd epsilon="1.136407872" sigma="0.7423891" mu="3"/>
+            <N-Gd epsilon="1.485002016" sigma="0.7216675" mu="3"/>
+            <P-Gd epsilon="1.244066376" sigma="0.7158078" mu="3"/>
+            <C-Gd epsilon="1.224472704" sigma="0.7117181" mu="3"/>
+            <I-Gd epsilon="1.080300432" sigma="0.771584" mu="3"/>
+            <M0-Gd epsilon="1.136914136" sigma="0.7495035" mu="3"/>
+            <G0-Gd epsilon="1.220397488" sigma="0.6604114" mu="3"/>
+            <K0-Gd epsilon="0.664527984" sigma="0.7599427" mu="3"/>
+            <T0-Gd epsilon="1.12426172" sigma="0.7206413" mu="3"/>
+            <R0-Gd epsilon="2.422443952" sigma="0.7675409" mu="3"/>
+            <A0-Gd epsilon="1.15187612" sigma="0.6894026" mu="3"/>
+            <D0-Gd epsilon="1.195414824" sigma="0.7168868" mu="3"/>
+            <E0-Gd epsilon="1.204799536" sigma="0.7345906" mu="3"/>
+            <Y0-Gd epsilon="1.693582784" sigma="0.7622451" mu="3"/>
+            <V0-Gd epsilon="1.089409" sigma="0.7482825" mu="3"/>
+            <L0-Gd epsilon="1.095651528" sigma="0.7538916" mu="3"/>
+            <Q0-Gd epsilon="1.372000544" sigma="0.7395169" mu="3"/>
+            <W0-Gd epsilon="1.884892" sigma="0.7788782" mu="3"/>
+            <F0-Gd epsilon="1.653249024" sigma="0.7570443" mu="3"/>
+            <S0-Gd epsilon="1.16915604" sigma="0.6964728" mu="3"/>
+            <H0-Gd epsilon="1.119328784" sigma="0.7424575" mu="3"/>
+            <N0-Gd epsilon="1.362799928" sigma="0.7217887" mu="3"/>
+            <P0-Gd epsilon="1.194502712" sigma="0.7160913" mu="3"/>
+            <C0-Gd epsilon="1.180678776" sigma="0.712035" mu="3"/>
+            <I0-Gd epsilon="1.080300432" sigma="0.771584" mu="3"/>
+            <Ad-Gd epsilon="2.150576" sigma="0.8475" mu="3"/>
+            <Cd-Gd epsilon="1.780292" sigma="0.8365" mu="3"/>
+            <Gd-Gd epsilon="2.158944" sigma="0.851" mu="3"/>
+            <M-Ud epsilon="0.720827888" sigma="0.7318975" mu="3"/>
+            <G-Ud epsilon="0.83987524" sigma="0.6432555" mu="3"/>
+            <K-Ud epsilon="0.40683124" sigma="0.742067" mu="3"/>
+            <T-Ud epsilon="0.702405736" sigma="0.7029531" mu="3"/>
+            <R-Ud epsilon="1.652328544" sigma="0.7504526" mu="3"/>
+            <A-Ud epsilon="0.74157216" sigma="0.6720037" mu="3"/>
+            <D-Ud epsilon="0.803528832" sigma="0.6996761" mu="3"/>
+            <E-Ud epsilon="0.817181224" sigma="0.7173835" mu="3"/>
+            <Y-Ud epsilon="1.514997112" sigma="0.7451817" mu="3"/>
+            <V-Ud epsilon="0.649729176" sigma="0.7218" mu="3"/>
+            <L-Ud epsilon="0.661067816" sigma="0.7352036" mu="3"/>
+            <Q-Ud epsilon="1.057397216" sigma="0.7223925" mu="3"/>
+            <W-Ud epsilon="1.789279232" sigma="0.7618274" mu="3"/>
+            <F-Ud epsilon="1.457375064" sigma="0.7399775" mu="3"/>
+            <S-Ud epsilon="0.7669272" sigma="0.6791335" mu="3"/>
+            <H-Ud epsilon="0.694995872" sigma="0.7253891" mu="3"/>
+            <N-Ud epsilon="1.043590016" sigma="0.7046675" mu="3"/>
+            <P-Ud epsilon="0.802650192" sigma="0.6988078" mu="3"/>
+            <C-Ud epsilon="0.783060704" sigma="0.6947181" mu="3"/>
+            <I-Ud epsilon="0.638884248" sigma="0.754584" mu="3"/>
+            <M0-Ud epsilon="0.695502136" sigma="0.7325035" mu="3"/>
+            <G0-Ud epsilon="0.778985488" sigma="0.6434114" mu="3"/>
+            <K0-Ud epsilon="0.399680784" sigma="0.7429427" mu="3"/>
+            <T0-Ud epsilon="0.68284972" sigma="0.7036413" mu="3"/>
+            <R0-Ud epsilon="1.539619952" sigma="0.7505409" mu="3"/>
+            <A0-Ud epsilon="0.71046412" sigma="0.6724026" mu="3"/>
+            <D0-Ud epsilon="0.754002824" sigma="0.6998868" mu="3"/>
+            <E0-Ud epsilon="0.763387536" sigma="0.7175906" mu="3"/>
+            <Y0-Ud epsilon="1.252174968" sigma="0.7452451" mu="3"/>
+            <V0-Ud epsilon="0.647997" sigma="0.7312825" mu="3"/>
+            <L0-Ud epsilon="0.654239528" sigma="0.7368916" mu="3"/>
+            <Q0-Ud epsilon="0.930588544" sigma="0.7225169" mu="3"/>
+            <W0-Ud epsilon="1.44348" sigma="0.7618782" mu="3"/>
+            <F0-Ud epsilon="1.211837024" sigma="0.7400443" mu="3"/>
+            <S0-Ud epsilon="0.72774404" sigma="0.6794728" mu="3"/>
+            <H0-Ud epsilon="0.677916784" sigma="0.7254575" mu="3"/>
+            <N0-Ud epsilon="0.921383744" sigma="0.7047887" mu="3"/>
+            <P0-Ud epsilon="0.753090712" sigma="0.6990913" mu="3"/>
+            <C0-Ud epsilon="0.739262592" sigma="0.695035" mu="3"/>
+            <I0-Ud epsilon="0.638884248" sigma="0.754584" mu="3"/>
+            <Ad-Ud epsilon="1.709164" sigma="0.8305" mu="3"/>
+            <Cd-Ud epsilon="1.33888" sigma="0.8195" mu="3"/>
+            <Gd-Ud epsilon="1.717532" sigma="0.834" mu="3"/>
+            <Ud-Ud epsilon="1.27612" sigma="0.817" mu="3"/>
         </wf>
         <debye rcut="3.5"
                shift="True"
@@ -872,6 +1046,8 @@
                temperature="compute:{temperature}"/>
         <bond_harmonic>
             <B-B k="8030" r0="0.381"/>
+            <R-R k="8030" r0="0.5"/>
+            <RS k="8030" r0="1.13"/>
         </bond_harmonic>
     </ff_param>
 </ff>

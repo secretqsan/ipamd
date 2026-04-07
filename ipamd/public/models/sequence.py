@@ -1,7 +1,7 @@
 import numpy as np
-from ipamd.public.utils.output import *
+from ipamd.public.utils.output import error
 
-class _Sequence:
+class Sequence:
     unit = ''
     allowed_types = ''
     def __init__(self, name, sequence):
@@ -42,10 +42,6 @@ class _Sequence:
     def name(self):
         return self.__seq_name__
 
-    @property
-    def sequence(self):
-        return str(self)
-
     def __setitem__(self, key, value):
         value = self.__check(value)
         match key:
@@ -68,7 +64,7 @@ class _Sequence:
 
     def __add__(self, other):
         match other:
-            case _Sequence():
+            case Sequence():
                 if self.__class__ != other.__class__:
                     error(f"Cannot add {self.__class__.__name__} and {other.__class__.__name__}.")
                     raise TypeError()
@@ -81,21 +77,20 @@ class _Sequence:
                 error(f"Unsupported type for addition: {type(other)}")
                 raise TypeError()
 
-class ProteinSequence(_Sequence):
+class ProteinSequence(Sequence):
     allowed_types = 'ACDEFGHIKLMNPQRSTVWYX'
     unit = 'amino acid'
     def __init__(self, name, sequence):
         super().__init__(name, sequence)
 
-class DNASequence(_Sequence):
+class DNASequence(Sequence):
     allowed_types = 'ACGTX'
     unit = 'nucleotide'
     def __init__(self, name, sequence):
         super().__init__(name, sequence)
 
-class RNASequence(_Sequence):
+class RNASequence(Sequence):
     allowed_types = 'ACGUX'
     unit = 'nucleotide'
     def __init__(self, name, sequence):
         super().__init__(name, sequence)
-

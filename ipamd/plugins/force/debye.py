@@ -1,5 +1,5 @@
 import math
-from ipamd.public.constant import *
+from ipamd.public.constant import na, e, epsilon0, kb
 def func(ff_param, all_info, gala_core):
     rcut = float(ff_param['rcut'])
     epsilon = ff_param['epsilon']

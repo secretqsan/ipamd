@@ -1,0 +1,12 @@
+{
+  "name": "mpipi_forcefield",
+  "info": "Mpipi forcefield supporting packge.\nNote that all proteins must be treated by the mpipi_chtype plugin.",
+  "dep": [],
+  "scripts": {
+    "force": ["wf.py"],
+    "generator": ["mpipi_chtype.py"]
+  },
+  "data": {
+    "forcefield": ["mpipi.xml"]
+  }
+}

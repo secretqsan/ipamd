@@ -20,18 +20,16 @@ setup(
         ],
     },
     description='A Python package for MD simulations and analysis of biomolecules',
-    version='0.0.16',
+    version='0.0.18',
     include_package_data=True,
     package_data={
         'ipamd': [
-            "data/forcefield/*", 
+            "data/**", 
             "app/lib/*",
             "plugins/**",
             "meta/*"
         ]
     },
-    data_files=[
-    ],
     install_requires=[
         'numpy',
         'rich',
