@@ -7,7 +7,7 @@ import os
 import csv
 import shutil
 
-from Bio import SeqIO
+from pybioseq.fasta import FastaReader
 from numba import cuda
 
 from ipamd.public import shared_data
@@ -45,7 +45,7 @@ class App():
             filename, extend_name = os.path.splitext(file)
             if extend_name == '.xml':
                 shared_data.available_ff.append(filename)
-        self.use('default')
+        self.use('default', override=True)
         self.builder = Builder(self)
         self.analysis = Analysis(self)
         self.simulation = Simulation(self)
@@ -98,14 +98,14 @@ class App():
             if not os.path.exists(self.working_dir):
                 os.makedirs(self.working_dir)
 
-    def use(self, ff=None):
-        if type(ff) is str:
-            if ff == 'default' or ff is None:
-                ff_name = config.get('default_ff')
-            else:
-                ff_name = ff
-            ff_file = os.path.join(self.__ff_dir, ff_name + '.xml')
+    def use(self, ff=None, override=True):
+        if ff is None or ff == "default":
+            ff = config.get('default_ff')
+        if isinstance(ff, str):
+            ff_file = os.path.join(self.__ff_dir, f"{ff}.xml")
             ff = read_xml(ff_file)['ff']
+
+        if override:
             self.force_field.atom_definition = ff['atom_definition']
             self.force_field.ff_param = ff['ff_param']
         else:
@@ -147,7 +147,6 @@ class OmicsLoader:
         self.__condition = condition
 
     def __iter__(self):
-
         for full_name in self.__files:
             filename, extend_name = os.path.splitext(full_name)
             data = {
@@ -157,7 +156,9 @@ class OmicsLoader:
                 'sequence': None
             }
             if extend_name == '.fasta':
-                for record in SeqIO.parse(os.path.join(self.__path, full_name), "fasta"):
+                reader = FastaReader(os.path.join(self.__path, full_name))
+                for record in reader.read():
+                    data['name'] = record.name
                     data['sequence'] = str(record.seq)
                     data['type'] = 'sequence'
                     data['path'] = None
@@ -165,7 +166,7 @@ class OmicsLoader:
             elif extend_name == '.pdb':
                 data['type'] = 'structure'
             elif extend_name == '.csv':
-                with open(os.path.join(self.__path, full_name), 'r') as f:
+                with open(os.path.join(self.__path, full_name), 'r', encoding='utf-8') as f:
                     reader = csv.reader(f)
                     for row in reader:
                         protein_name = row[0].strip()
@@ -185,7 +186,7 @@ class OmicsLoader:
                     break
             yield data
 
-def batch_run(loader, task, gpus='', *args, **kwargs):
+def batch_run(loader, task, *args, gpus='', **kwargs):
     gpu_list = available_gpus()
     total_gpus = len(gpu_list)
     if gpus == '':

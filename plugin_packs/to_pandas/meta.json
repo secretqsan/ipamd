@@ -1,0 +1,8 @@
+{
+  "name": "to_pandas",
+  "info": "convert data to a pandas dataframe plugin.",
+  "dep": ["pandas"],
+  "scripts": {
+    "data_process": ["to_df.py"]
+  }
+}

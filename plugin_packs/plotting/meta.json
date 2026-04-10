@@ -1,0 +1,8 @@
+{
+  "name": "plotting",
+  "info": "directly plot data plugin.",
+  "dep": ["matplotlib"],
+  "scripts": {
+    "data_process": ["plot.py"]
+  }
+}

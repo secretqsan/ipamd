@@ -1,7 +1,8 @@
+import os.path
 from pybioseq.fasta import fastaReader
 from pybioseq.converter import standard_aa, standard_nmp, standard_dnmp
-from ipamd.public.models.sequence import *
-import os
+from ipamd.public.models.sequence import ProteinSequence, DNASequence, RNASequence
+from ipamd.public.utils.output import error
 
 configure = {
     'type': 'function',

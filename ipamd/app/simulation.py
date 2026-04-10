@@ -122,13 +122,6 @@ class Simulation:
             self.__res_auto_read = res_auto_read
             self.__should_minimize_energy = minimize_energy
 
-            prop = simulation_box.current_frame().properties()
-            self.__rigid_body = False
-            for molecule in prop['molecules']:
-                for rigid in molecule['rigid_group']:
-                    if rigid != -1:
-                        self.__rigid_body = True
-                        break
 
         def __parse_force(self, all_info, force, param):
             parser = getattr(self.__parser, force)
@@ -200,7 +193,7 @@ class Simulation:
                         if override:
                             return override == yes
                         return input(f"{hint} ({yes}/{no}): ")  == yes
-                    
+
                     if max_step < run_step and max_step != -1:
                         if make_sure('Previous simulation not finished, continue?', 'y', 'n', yes):
                             input_file_path = os.path.join(self.__working_dir, latest_output + '.xml')
@@ -329,10 +322,18 @@ class Simulation:
 
         @captured
         def __init_integrator(self, all_info, target_app, type_='langevin_nvt'):
+            rigid_body = False
+            prop = self.__simulation_box.current_frame().properties()
+            for molecule in prop['molecules']:
+                for rigid in molecule['rigid_group']:
+                    print(rigid)
+                    if rigid != -1:
+                        rigid_body = True
+                        break
             integrator, integrator_b = self.__parse_integrator(all_info, type_, {
                 'temperature': self.__simulation_box.env.values['temperature'],
                 'pressure': self.__simulation_box.env.values['pressure'],
-                'rigid': self.__rigid_body
+                'rigid': rigid_body
             })
             target_app.add(integrator)
             if integrator_b is not None:

@@ -1,6 +1,6 @@
 import os
-from ipamd.public.utils.plugin_manager import PluginBase
 import subprocess
+from ipamd.public.utils.plugin_manager import PluginBase
 configure = {
     "apply": ['persistency_dir']
 }

@@ -14,4 +14,3 @@ def available_gpus():
     p.start()
     p.join()
     return list(result)
-

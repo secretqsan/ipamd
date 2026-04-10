@@ -4,10 +4,10 @@ def func(ff_param, all_info, gala_core):
     neighbor_list.exclusion(["bond"])
     wf_force = gala_core.WFForce(all_info, neighbor_list, rcut_max)
     atom_type = all_info.getBasicInfo().getParticleTypes()
-    for i in range(len(atom_type)):
-        for j in range(i, len(atom_type)):
-            atom1 = atom_type[i]
-            atom2 = atom_type[j]
+    for atom1 in atom_type:
+        for atom2 in atom_type:
+            if atom1 >= atom2:
+                continue
             type_name_guess_1 = f'{atom1}-{atom2}'
             if type_name_guess_1 in ff_param.keys():
                 type_name = type_name_guess_1

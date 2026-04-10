@@ -30,7 +30,7 @@ def func(frame):
 
     for molecule in frame.molecules:
         owned = False
-        for i, drop in enumerate(drop_list):
+        for _, drop in enumerate(drop_list):
             for m in drop:
                 position1 = mass_center(m['prototype'])
                 position2 = mass_center(molecule['prototype'])

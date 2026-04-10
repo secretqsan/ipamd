@@ -20,7 +20,7 @@ setup(
         ],
     },
     description='A Python package for MD simulations and analysis of biomolecules',
-    version='0.0.18',
+    version='0.0.26',
     include_package_data=True,
     package_data={
         'ipamd': [
@@ -34,13 +34,10 @@ setup(
         'numpy',
         'rich',
         'numba',
-        'matplotlib',
         'biopython',
-        'requests',
-        'pandas',
         'numpy',
         'pybioseq',
-        'pypdbio'
+        'periodictable'
     ],
     packages=find_packages(),
     author='Xiaoyang Liu',

@@ -5,7 +5,7 @@ def func(ff_param, all_info, gala_core):
     epsilon = ff_param['epsilon']
     cs = ff_param['cs']
     temperature = ff_param['temperature']
-    neighbor_list = gala_core.NeighborList(all_info, rcut, rcut * 0.2)
+    neighbor_list = gala_core.NeighborList(all_info, rcut, rcut * 0.1)
     neighbor_list.exclusion(["bond"])
     if cs < 1e-7:
         cs = 1e-7

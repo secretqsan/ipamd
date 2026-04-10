@@ -107,8 +107,8 @@ def func(filename, persistency_dir, frame, ignoring_pbc = False):
             }
         }
     }
-    with open(conf_path, 'w') as f:
+    with open(conf_path, 'w', encoding='utf-8') as f:
         f.write(dict_to_xml(d))
-    with open(map_path, 'w') as f:
+    with open(map_path, 'w', encoding='utf-8') as f:
         for i, extra in enumerate(extras):
             f.write(f'{i} {extra['type']} {extra['CG']}\n')

@@ -39,7 +39,7 @@ def __dict_to_xml_helper(d, key_name):
     text = ''
     for key in d.keys():
         child = d[key]
-        if type(child) is not dict:
+        if not isinstance(child, dict):
             if key == 'text':
                 text = child
             else:

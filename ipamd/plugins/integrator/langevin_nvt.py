@@ -7,7 +7,7 @@ def func(param, all_info, gala_core):
     rigid = param['rigid']
     if rigid:
         nvt_rigid = gala_core.LangevinNVTRigid(all_info, group_b, t_reduced, random.randint(1, 100))
-        nvt_rigid.setGamma(0.01)
+        nvt_rigid.setGamma(0.001)
     else:
         nvt_rigid = None
     nvt.setGamma(0.001)
