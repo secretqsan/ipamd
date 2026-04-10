@@ -6,6 +6,8 @@ import json
 import os
 from shutil import unpack_archive, make_archive, rmtree, copyfile
 
+import requests
+
 from ipamd.public import shared_data
 from ipamd.public.utils.output import warning
 
@@ -30,11 +32,19 @@ def install_plugin(plugin_filename):
         plugin_filename (str): The filename of the plugin to install
     """
     plugin_format = ""
+    online_installation = False
+    if not os.path.exists(plugin_filename):
+        plugin_filename = f"{plugin_filename}.zip"
+        base_url = "https://raw.githubusercontent.com/secretqsan/ipamd/refs/heads/master/plugin_packs/zipped/"
+        target_url = f"{base_url}{plugin_filename}"
+        print(f"Downloading plugin {plugin_filename} from {target_url}")
+        requests.get(target_url, timeout=10)
+        online_installation = True
+
     if os.path.isdir(plugin_filename):
         temp_dir = plugin_filename
     else:
         temp_dir = f"{os.path.splitext(plugin_filename)[0]}_unpacked"
-        plugin_format = "archive"
         try:
             unpack_archive(plugin_filename, temp_dir)
         except Exception as e:
@@ -81,6 +91,9 @@ def install_plugin(plugin_filename):
         json.dump(global_meta, f, indent=4)
     if plugin_format == "archive":
         rmtree(temp_dir)
+    if online_installation:
+        os.remove(plugin_filename)
+
     print(f"Plugin {meta['name']} installed")
     print(f"\nINFO: {meta["info"]}")
 
@@ -153,13 +166,13 @@ def main():
     Main function
     """
     parser = argparse.ArgumentParser(description="IPAMD CLI Tool")
-    parser.add_argument('--install-plugin', help='Install a plugin from the file')
-    parser.add_argument('--pack', help='Pack a plugin from the file')
+    parser.add_argument('-i', '--install-plugin', help='Install a plugin from the file')
+    parser.add_argument('-p', '--pack', help='Pack a plugin from the file')
     parser.add_argument(
-        '--list-plugin', action='store_true', help='List all installed plugin packs'
+        '-l', '--list-plugin', action='store_true', help='List all installed plugin packs'
     )
-    parser.add_argument('--version', action='version', version='0.0.16')
-    parser.add_argument('--remove-plugin', help='Remove a plugin pack')
+    parser.add_argument('-v', '--version', action='version', version='0.0.27')
+    parser.add_argument('-r', '--remove-plugin', help='Remove a plugin pack')
     args = parser.parse_args()
 
     if args.list_plugin:
@@ -171,7 +184,7 @@ def main():
     elif args.remove_plugin:
         remove_plugin(args.remove_plugin)
     else:
-        print("No action specified. Use --install-plugin to install a plugin.")
+        print("No action specified. Use -i or --install-plugin to install a plugin.")
 
 if __name__ == "__main__":
     main()

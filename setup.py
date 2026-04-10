@@ -20,7 +20,7 @@ setup(
         ],
     },
     description='A Python package for MD simulations and analysis of biomolecules',
-    version='0.0.26',
+    version='0.0.27',
     include_package_data=True,
     package_data={
         'ipamd': [
