@@ -11,10 +11,10 @@ simulation = app.simulation.new_simulation(
     snap_shot=10
 )
 
-rna = RNASequence('U15A15', 'AUCGCGAU')
+rna = RNASequence('rna', 'AUCGCGAUAUCGCGAUAUCGCGAUAUCGCGAU')
 rna_mol = app.builder.molecule_from_curve(
     rna,
-    lambda index: (0, 0, index * 0.5) if index < 4 else (0, 1.13, (7 - index) * 0.5),
+    lambda index: (0, 0, index * 0.5) if index < 16 else (0, 1.13, (31 - index) * 0.5),
     rename_map={
         'C': 'Cd',
         'G': 'Gd',
@@ -23,16 +23,16 @@ rna_mol = app.builder.molecule_from_curve(
     },
     new_bond="R-R"
 )
-for n in range(2):
-    rna_mol.link(n, 7 - n, type_="RS")
+for n in range(4):
+    rna_mol.link(n, 31 - n, type_="RS")
 
 app.load_file('dimer_G3BP1.pdb')
 prot = app.builder.protein_from_pdb(
     'dimer_G3BP1.pdb',
-    rigid_range='0-200'
+    rigid_range='0-139,466-605;340-413;806-879'
 )
 app.builder.mpipi_chtype(prot)
 
-box.place_molecule_randomly(prot, 1, allow_out_of_box=False)
-box.place_molecule_randomly(rna_mol, 1, allow_out_of_box=False)
+box.place_molecule_randomly(prot, 10, allow_out_of_box=False)
+box.place_molecule_randomly(rna_mol, 10, allow_out_of_box=False)
 simulation.run()

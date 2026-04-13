@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ff>
+    <atom_definition />
     <ff_param>
         <centripetal f="0.5" threshold="10" shape="Slab"/>
     </ff_param>

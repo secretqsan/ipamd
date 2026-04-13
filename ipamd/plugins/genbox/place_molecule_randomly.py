@@ -1,11 +1,9 @@
 import random
-
 import numpy as np
 from numba import cuda
 
 from ipamd.public.utils.output import warning, verbose
 configure = {
-    "type": 'function',
     "schema": 'frame'
 }
 @cuda.jit
@@ -23,7 +21,7 @@ def overlap(pre_positions, new_position, box_size, threshold, result):
         i += cuda.gridsize(1)
 
 
-def func(molecule, n, frame, threshold = 1, max_tries=5, strict=False, allow_out_of_box=True):
+def func(molecule, n, frame, threshold = 1, max_tries=5, strict=True, allow_out_of_box=True):
     for i in range(int(n)):
         prop = frame.properties()
         size = prop['size']
@@ -37,7 +35,11 @@ def func(molecule, n, frame, threshold = 1, max_tries=5, strict=False, allow_out
         while True:
             success = False
             tries += 1
-            offset = [random.random() * size[0], random.random() * size[1], random.random() * size[2]]
+            offset = [
+                random.random() * size[0],
+                random.random() * size[1],
+                random.random() * size[2]
+            ]
             rotation = [random.random() * 360, random.random() * 360, random.random() * 360]
             molecule.rotate(rotation[0], rotation[1], rotation[2])
 
@@ -48,7 +50,7 @@ def func(molecule, n, frame, threshold = 1, max_tries=5, strict=False, allow_out
                 abs_pos_x = position[0] + offset[0]
                 abs_pos_y = position[1] + offset[1]
                 abs_pos_z = position[2] + offset[2]
-                if allow_out_of_box == False:
+                if not allow_out_of_box:
                     if abs_pos_x < 0 or abs_pos_x > size[0]:
                         out_of_box = True
                         break
@@ -84,6 +86,8 @@ def func(molecule, n, frame, threshold = 1, max_tries=5, strict=False, allow_out
                 frame.add_molecule(molecule, offset=offset)
                 verbose(f'Molecule {i + 1} of type {molecule.type_} was placed after {tries} tries')
                 break
-            if tries == max_tries and strict == False:
-                warning(f'Failed to place molecule {i} of type {molecule.type_} after {max_tries} tries')
+            if tries == max_tries and not strict:
+                warning(
+                    f'Failed to place molecule {i} of type {molecule.type_} after {max_tries} tries'
+                )
                 break

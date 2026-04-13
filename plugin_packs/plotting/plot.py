@@ -1,5 +1,5 @@
-from matplotlib import pyplot as plt
 from functools import singledispatch
+from matplotlib import pyplot as plt
 from ipamd.public.models.data import *
 from ipamd.public.utils.output import warning
 from ipamd.public.utils.plugin_manager_v1 import PluginBase
@@ -65,7 +65,13 @@ def _(data: Vector, **kwargs):
 def _(data: Ratio, **kwargs):
     plt.pie(
         data.data,
-        labels=[label if value / sum(data.data) > 0.02 else f'{label} - {value / sum(data.data) * 100:.1f}%' for value, label in zip(data.data, data.meta['labels'])],
+        labels=[
+            label
+            if value / sum(data.data) > 0.02
+            else f'{label} - {value / sum(data.data) * 100:.1f}%'
+            for value, label
+            in zip(data.data, data.meta['labels'])
+        ],
         autopct=lambda pct: f'{pct:.1f}%' if pct > 2 else '',
         startangle=90,
         shadow=True,
@@ -111,4 +117,3 @@ def func(data, style=None, save_figure=False, **kwargs):
         if save_figure:
             plt.savefig(f"{data.meta['title']}.png")
         plt.show()
-

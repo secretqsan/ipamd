@@ -18,7 +18,8 @@ app.use({
             "COO": {'lambda': '0.092587557536158', 'sigma': '0.1'}
         }
     }
-})
+}, override=False)
+app.builder.load_example_molecule('fus')
 box = app.builder.new_simulation_box(40, 40, 40).in_solvent('pure water')
 mol = app.builder.cg_molecule_from_pdb('charged.pdb', rigid_range='1-401')
 mol_fus = app.builder.protein_from_pdb('fus.pdb', rigid_range='285-371')

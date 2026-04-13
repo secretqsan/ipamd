@@ -18,7 +18,7 @@ app.use({
             "COO": {'lambda': '0.092587557536158', 'sigma': '0.1'}
         }
     }
-})
+}, override=False)
 box = app.builder.box_from_xml('final')
 simulation = app.simulation.new_simulation(
     box,
