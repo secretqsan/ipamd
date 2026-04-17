@@ -1,0 +1,8 @@
+{
+  "name": "adv_data_processing",
+  "info": "advanced data processing plugin.",
+  "dep": ["scipy"],
+  "scripts": {
+    "data_process": ["gaussian.py"]
+  }
+}

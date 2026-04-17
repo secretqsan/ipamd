@@ -1,5 +1,5 @@
-from Bio.SeqUtils import seq3
-from ipamd.public.utils.output import *
+from pybioseq.converter import to3
+from ipamd.public.utils.output import output
 
 configure = {
     "type": 'function',
@@ -11,7 +11,7 @@ def func(protein, word3=True, ter=True):
     seperator = '-' if word3 else ' '
     for idx, res in enumerate(protein.__sequence__):
         if word3:
-            output_str += seq3(res)
+            output_str += to3(res)
         else:
             output_str += res
         output_str += seperator if idx < seq_length - 1 else ''

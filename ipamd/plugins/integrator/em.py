@@ -1,12 +1,10 @@
-def func(param, all_info, gala_core):
+def func(param, all_info, group, gala_core):
     rigid = param['rigid']
-    group_nb = gala_core.ParticleSet(all_info, "non_body")
-    group_b = gala_core.ParticleSet(all_info, "body")
-    nve = gala_core.NVE(all_info, group_nb)
+    integrator = None
     if rigid:
-        nve_rigid = gala_core.NVERigid(all_info, group_b)
+        integrator = gala_core.NVERigid(all_info, group)
     else:
-        nve_rigid = None
-    nve.setZeroVel(True, 5)
-    nve.setLimit(0.001)
-    return nve, nve_rigid
+        integrator = gala_core.NVE(all_info, group)
+    integrator.setZeroVel(True, 5)
+    integrator.setLimit(0.001)
+    return integrator

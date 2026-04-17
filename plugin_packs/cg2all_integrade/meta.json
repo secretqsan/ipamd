@@ -1,0 +1,9 @@
+{
+  "name": "cg2all_integrate ",
+  "info": "cg2all supporting packge. Please restart your shell after installation.",
+  "action": "install.sh",
+  "dep": [],
+  "scripts": {
+    "generator": ["to_aa.py"]
+  }
+}

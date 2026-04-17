@@ -1,0 +1,8 @@
+{
+  "name": "cif_format_support",
+  "info": "cif format support plugin.",
+  "dep": ["biopython"],
+  "scripts": {
+    "data_process": ["to_cif.py"]
+  }
+}

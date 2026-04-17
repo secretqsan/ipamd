@@ -5,7 +5,6 @@ import argparse
 import json
 import os
 from shutil import unpack_archive, make_archive, rmtree, copyfile
-
 import requests
 
 from ipamd.public import shared_data
@@ -78,6 +77,12 @@ def install_plugin(plugin_filename):
             raise ValueError(f"Failed to unpack plugin {plugin_filename}: {e}") from e
     with open(os.path.join(temp_dir, "meta.json"), 'r', encoding='utf-8') as f:
         meta = json.load(f)
+    if "action" in meta:
+        check_script = meta["action"]
+        result = os.system(f"bash {os.path.join(temp_dir, check_script)}")
+        if result != 0:
+            raise ValueError(f"Failed to install plugin {meta['name']}.")
+
     meta_dir = os.path.join(shared_data.module_installation_dir, "meta")
     meta_filename = os.path.join(meta_dir, f"{meta["name"]}_meta.json")
     if os.path.exists(meta_filename):
@@ -197,14 +202,24 @@ def main():
     Main function
     """
     parser = argparse.ArgumentParser(description="IPAMD CLI Tool")
-    parser.add_argument('-i', '--install-plugin', metavar='plugin', help='Install a plugin from the file')
-    parser.add_argument('-p', '--pack', metavar='plugin_dir', help='Pack a plugin from the file')
+    parser.add_argument(
+        '-i', '--install-plugin', metavar='plugin', help='Install a plugin from the file'
+    )
+    parser.add_argument(
+        '-p', '--pack', metavar='plugin_dir', help='Pack a plugin from the file'
+    )
     parser.add_argument(
         '-l', '--list-plugin', action='store_true', help='List all installed plugin packs'
     )
-    parser.add_argument('-v', '--version', action='version', version='0.0.28')
-    parser.add_argument('-r', '--remove-plugin', metavar='plugin_name', help='Remove a plugin pack')
-    parser.add_argument('-s', '--show-examples', action='store_true', help='Show examples of ipamd')
+    parser.add_argument(
+        '-v', '--version', action='version', version='0.0.29'
+    )
+    parser.add_argument(
+        '-r', '--remove-plugin', metavar='plugin_name', help='Remove a plugin pack'
+    )
+    parser.add_argument(
+        '-s', '--show-examples', action='store_true', help='Show examples of ipamd'
+    )
     args = parser.parse_args()
 
     if args.list_plugin:

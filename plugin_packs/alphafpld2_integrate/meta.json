@@ -1,0 +1,9 @@
+{
+  "name": "alphafpld2_integrate ",
+  "info": "Alphafpld2 supporting packge. Please restart your shell after installation.",
+  "action": "install.sh",
+  "dep": [],
+  "scripts": {
+    "generator": ["af2.py"]
+  }
+}

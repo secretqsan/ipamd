@@ -5,3 +5,4 @@ demo/dev
 __pycache__
 .vscode
 /ipa-core/
+.VSCodeCounter/

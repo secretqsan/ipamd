@@ -11,20 +11,18 @@ simulation = app.simulation.new_simulation(
     snap_shot=10
 )
 
-rna = RNASequence('rna', 'AUCGCGAUAUCGCGAUAUCGCGAUAUCGCGAU')
+rna = RNASequence('rna', 'A' * 15 + 'U' * 15)
 rna_mol = app.builder.molecule_from_curve(
     rna,
-    lambda index: (0, 0, index * 0.5) if index < 16 else (0, 1.13, (31 - index) * 0.5),
+    lambda index: (0, 0, index * 0.5) if index < 15 else (0, 1.13, (29 - index) * 0.5),
     rename_map={
-        'C': 'Cd',
-        'G': 'Gd',
         'A': 'Ad',
         'U': 'Ud',
     },
     new_bond="R-R"
 )
 for n in range(4):
-    rna_mol.link(n, 31 - n, type_="RS")
+    rna_mol.link(n, 29 - n, type_="RS")
 
 app.load_file('dimer_G3BP1.pdb')
 prot = app.builder.protein_from_pdb(

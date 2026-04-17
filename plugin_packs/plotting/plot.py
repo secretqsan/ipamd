@@ -1,12 +1,22 @@
+"""plot the data"""
 from functools import singledispatch
 from matplotlib import pyplot as plt
-from ipamd.public.models.data import *
+import numpy as np
+
+from ipamd.public.models.data import PointSet, Vector, Matrix, Ratio, Distribution, Scalar
 from ipamd.public.utils.output import warning
 from ipamd.public.utils.plugin_manager_v1 import PluginBase
 
 
 @singledispatch
 def plot(data, **kwargs):
+    """
+    plot the data
+    
+    :param data: data to plot
+    :param kwargs: keyword arguments
+    :return: None
+    """
     raise NotImplementedError()
 
 @plot.register
@@ -33,9 +43,7 @@ def _(data: Vector, **kwargs):
         n_categories = len(unique_categories)
 
         category_to_num = {cat: i for i, cat in enumerate(unique_categories)}
-
         numeric_data = np.vectorize(category_to_num.get)(data.data)
-
         discrete_cmap = plt.cm.get_cmap('viridis', n_categories)
         im = plt.imshow(
             [numeric_data],
@@ -85,7 +93,11 @@ def _(data: Distribution, **kwargs):
 
 @plot.register
 def _(data: Matrix, **kwargs):
-    plt.imshow(data.data, origin='lower')
+    plt.imshow(
+        data.data,
+        origin='lower',
+        aspect='auto'
+    )
     plt.colorbar()
     size_x = data.data.shape[1]
     size_y = data.data.shape[0]
@@ -103,6 +115,13 @@ def _(data: Matrix, **kwargs):
     )
 
 def func(data, style=None, save_figure=False, **kwargs):
+    """plugin main function
+    :param data: data to plot
+    :param style: style of the plot
+    :param save_figure: whether to save the figure
+    :param kwargs: keyword arguments
+    :return: None
+    """
     if isinstance(data, Scalar):
         warning("Scalar data cannot be plotted.")
         PluginBase.call('print', data)

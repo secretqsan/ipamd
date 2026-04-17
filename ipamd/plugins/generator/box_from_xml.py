@@ -7,5 +7,5 @@ configure = {
 def func(filename, ff, working_dir):
     box = Box(0, 0, 0, ff, working_dir)
     box.new_frame()
-    box.read_xml(filename)
+    box.read_xml(filename) # pylint: disable=no-member
     return box

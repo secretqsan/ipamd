@@ -50,7 +50,8 @@ class Simulation:
                        run_step=0, period=0,
                        thermo_bath='langevin_nvt',
                        res_auto_read=True,
-                       minimize_energy=True
+                       minimize_energy=True,
+                       fixed_particle=[]
         ):
         """
         Create a new simulation job.
@@ -83,7 +84,8 @@ class Simulation:
             thermo_bath=thermo_bath,
             force_field=self.__app.force_field,
             res_auto_read=res_auto_read,
-            minimize_energy=minimize_energy
+            minimize_energy=minimize_energy,
+            fixed_particle=fixed_particle
         )
 
     class __Simulation_Job:
@@ -104,7 +106,8 @@ class Simulation:
             thermo_bath,
             force_field,
             res_auto_read,
-            minimize_energy
+            minimize_energy,
+            fixed_particle
         ):
             self.__total_step = run_step
             self.__target_step = run_step
@@ -120,16 +123,16 @@ class Simulation:
             self.__thermo_bath = thermo_bath
             self.__force_field = force_field
             self.__res_auto_read = res_auto_read
-            self.__should_minimize_energy = minimize_energy
-
+            self.__should_minimize_energy = minimize_energy,
+            self.__fixed_particle = fixed_particle
 
         def __parse_force(self, all_info, force, param):
             parser = getattr(self.__parser, force)
             return parser(param, all_info, self.__gala_core)
 
-        def __parse_integrator(self, all_info, integrator, param):
+        def __parse_integrator(self, all_info, group, integrator, param):
             parser = getattr(self.__parser, integrator)
-            return parser(param, all_info, self.__gala_core)
+            return parser(param, all_info, group, self.__gala_core)
 
         def __outputs(self):
             files = os.listdir(self.__working_dir)
@@ -163,7 +166,9 @@ class Simulation:
                 os.remove(os.path.join(self.__working_dir, self.job_name + '.xml'))
             if os.path.exists(os.path.join(self.__working_dir, self.job_name + '.map')):
                 os.remove(os.path.join(self.__working_dir, self.job_name + '.map'))
-            if remove_info and os.path.exists(os.path.join(self.__working_dir, self.job_name + '.info')):
+            if remove_info and os.path.exists(
+                os.path.join(self.__working_dir, self.job_name + '.info')
+            ):
                 os.remove(os.path.join(self.__working_dir, self.job_name + '.info'))
 
         def exist(self):
@@ -326,18 +331,25 @@ class Simulation:
             prop = self.__simulation_box.current_frame().properties()
             for molecule in prop['molecules']:
                 for rigid in molecule['rigid_group']:
-                    print(rigid)
                     if rigid != -1:
                         rigid_body = True
                         break
-            integrator, integrator_b = self.__parse_integrator(all_info, type_, {
+            exclude_list = [-index for index in self.__fixed_particle]
+            if rigid_body:
+                group_rigid = self.__gala_core.ParticleSet(all_info, ['body'] + exclude_list)
+                integrator_r = self.__parse_integrator(all_info, group_rigid, type_, {
+                    'temperature': self.__simulation_box.env.values['temperature'],
+                    'pressure': self.__simulation_box.env.values['pressure'],
+                    'rigid': True
+                })
+                target_app.add(integrator_r)
+            group_non_rigid = self.__gala_core.ParticleSet(all_info, ['non_body'] + exclude_list)
+            integrator = self.__parse_integrator(all_info, group_non_rigid, type_, {
                 'temperature': self.__simulation_box.env.values['temperature'],
                 'pressure': self.__simulation_box.env.values['pressure'],
-                'rigid': rigid_body
+                'rigid': False
             })
             target_app.add(integrator)
-            if integrator_b is not None:
-                target_app.add(integrator_b)
 
         def __minimize_energy(self, input_file_path):
             verbose('reading input file ' + input_file_path)
